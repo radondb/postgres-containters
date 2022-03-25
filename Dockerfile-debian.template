@@ -1,3 +1,4 @@
+ARG PREFIX
 FROM ${PREFIX}/radondb-base:{{ env.variant }}-slim
 
 RUN set -ex; \
