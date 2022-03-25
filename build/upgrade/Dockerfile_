@@ -16,7 +16,7 @@ ARG UPGRADE_PG_VERSIONS
 
 # install the highest version of PostgreSQL + pgAudit and its dependencies as
 # well as unzip
-FROM radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER} AS extension_builder
+FROM ${PREFIX}/radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER} AS extension_builder
 
 
 RUN apt-get -y update && \
@@ -28,7 +28,7 @@ RUN rm -rf /external_extensions && mkdir -p /external_extensions/pgnodemx && cd 
 	grep -m1 -Eo "archive/refs/tags/[^/]+\.tar\.gz") | tar --strip-components=1 -xzv -C /external_extensions/pgnodemx ; \
 	make USE_PGXS=1 && make USE_PGXS=1 install; 
 
-FROM radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER}
+FROM ${PREFIX}/radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER}
 
 LABEL name="upgrade" \
 	summary="Provides a pg_upgrade capability that performs a major PostgreSQL upgrade." \

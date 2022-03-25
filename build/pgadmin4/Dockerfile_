@@ -3,7 +3,7 @@ ARG BASEVER
 ARG PG_FULL
 ARG PREFIX
 ARG BASE_IMAGE_OS
-FROM radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER}
+FROM ${PREFIX}/radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER}
 
 # For RHEL8 all arguments used in main code has to be specified after FROM
 ARG BASEOS
