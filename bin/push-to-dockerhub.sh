@@ -7,9 +7,9 @@ VERSION=${CCP_IMAGE_TAG-"debian-14.2-3.0.0"}
 GIS_VERSION=${CCP_POSTGIS_IMAGE_TAG-"debian-14.2-3.1-3.0.0" }
 CCP_IMAGE_PREFIX=${CCP_IMAGE_PREFIX-"zhonghl003"}
 IMAGES=(
-    # radondb-pgbackrest
-    # radondb-pgbouncer
-    # radondb-upgrade
+     radondb-pgbackrest
+     radondb-pgbouncer
+     radondb-upgrade
     radondb-pgbadger
     # radondb-pgadmin4 
     # radondb-pgpool

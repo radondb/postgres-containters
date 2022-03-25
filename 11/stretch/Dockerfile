@@ -4,7 +4,7 @@
 # PLEASE DO NOT EDIT IT DIRECTLY.
 #
 
-FROM radondb-base:stretch-slim
+FROM ${PREFIX}/radondb-base:stretch-slim
 
 RUN set -ex; \
 	if ! command -v gpg > /dev/null; then \
