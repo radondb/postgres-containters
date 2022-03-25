@@ -6,7 +6,7 @@ ARG DFSET
 ARG PACKAGER
 ARG PG_MAJOR
 ARG POSTGIS_LBL
-FROM radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER} AS extension_builder
+FROM ${PREFIX}/radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER} AS extension_builder
 
 
 RUN apt-get -y update && \
@@ -27,7 +27,7 @@ RUN mkdir -p /external_extensions/timescaledb && cd /external_extensions/timesca
 	curl -SL https://github.com/timescale/timescaledb/archive/refs/tags/2.4.0.tar.gz| tar --strip-components=1 -xzv -C /external_extensions/timescaledb ;\
 	fi; \
 	./bootstrap && cd build && make && make install ;
-FROM radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER}
+FROM ${PREFIX}/radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER}
 COPY --from=extension_builder /etc/apt/sources.list /etc/apt/sources.list
 COPY --from=extension_builder /etc/apt/sources.list.d/pgdg.list /etc/apt/sources.list.d/pgdg.list
 COPY --from=extension_builder /usr/lib/postgresql/${PG_MAJOR}/lib /usr/lib/postgresql/${PG_MAJOR}/lib
