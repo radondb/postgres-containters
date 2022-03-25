@@ -4,7 +4,7 @@
 # PLEASE DO NOT EDIT IT DIRECTLY.
 #
 
-FROM radondb-base:bullseye-slim
+FROM ${PREFIX}/radondb-base:bullseye-slim
 
 RUN set -ex; \
 	if ! command -v gpg > /dev/null; then \

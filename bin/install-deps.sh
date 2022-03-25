@@ -19,22 +19,18 @@ OPENSHIFT_CLIENT='https://github.com/openshift/origin/releases/download/v3.11.0/
 CERTSTRAP_VERSION=1.1.1
 YQ_VERSION=3.3.0
 
-sudo yum -y install net-tools bind-utils wget unzip git
+apt-get  -y install  net-tools  wget unzip git
 
-which buildah
+which docker
 if [ $? -eq 1 ]; then
         echo "installing buildah"
-        sudo subscription-manager repos --enable=rhel-7-server-extras-rpms
-        sudo yum -y install buildah
+        sudo apt-get  -y install docker.io docker
 fi
 
-FILE='openshift-origin-client.tgz'
-wget -O /tmp/${FILE?} ${OPENSHIFT_CLIENT?}
-tar xvzf /tmp/${FILE?} -C /tmp
-sudo cp /tmp/openshift-*/oc /usr/bin/oc
+
 
 # manually install certstrap into $GOBIN for running the SSL examples
-wget -O $CCPROOT/certstrap https://github.com/square/certstrap/releases/download/v${CERTSTRAP_VERSION}/certstrap-v${CERTSTRAP_VERSION}-linux-amd64 && \
+curl -L -o $CCPROOT/certstrap https://github.com/square/certstrap/releases/download/v${CERTSTRAP_VERSION}/certstrap-v${CERTSTRAP_VERSION}-linux-amd64 && \
     mv $CCPROOT/certstrap $GOBIN && \
     chmod +x $GOBIN/certstrap
 
