@@ -56,33 +56,33 @@ dir_check_err "${PGDATANEW?}"
   case $NEW_VERSION in
 "13")
     echo_info "Setting PGBINNEW to ${NEW_VERSION}."
-    export PGBINNEW=/usr/pgsql-13/bin
-    export LD_LIBRARY_PATH=/usr/pgsql-13/lib
+    export PGBINNEW=/usr/lib/postgresql/13/bin
+    export LD_LIBRARY_PATH=/usr/lib/postgresql/13/lib
     ;;
 "12")
     echo_info "Setting PGBINNEW to ${NEW_VERSION}."
-    export PGBINNEW=/usr/pgsql-12/bin
-    export LD_LIBRARY_PATH=/usr/pgsql-12/lib
+    export PGBINNEW=/usr/lib/postgresql/12/bin
+    export LD_LIBRARY_PATH=/usr/lib/postgresql/12/lib
     ;;
 "11")
     echo_info "Setting PGBINNEW to ${NEW_VERSION}."
-    export PGBINNEW=/usr/pgsql-11/bin
-    export LD_LIBRARY_PATH=/usr/pgsql-11/lib
+    export PGBINNEW=/usr/lib/postgresql/11/bin
+    export LD_LIBRARY_PATH=/usr/lib/postgresql/11/lib
     ;;
 "10")
     echo_info "Setting PGBINNEW to ${NEW_VERSION}."
-    export PGBINNEW=/usr/pgsql-10/bin
-    export LD_LIBRARY_PATH=/usr/pgsql-10/lib
+    export PGBINNEW=/usr/lib/postgresql/10/bin
+    export LD_LIBRARY_PATH=/usr/lib/postgresql/10/lib
     ;;
 "9.6")
     echo_info "Setting PGBINNEW to ${NEW_VERSION}."
-    export PGBINNEW=/usr/pgsql-9.6/bin
-    export LD_LIBRARY_PATH=/usr/pgsql-9.6/lib
+    export PGBINNEW=/usr/lib/postgresql/9.6/bin
+    export LD_LIBRARY_PATH=/usr/lib/postgresql/9.6/lib
     ;;
 "9.5")
     echo_info "Setting PGBINNEW to ${NEW_VERSION}."
-    export PGBINNEW=/usr/pgsql-9.5/bin
-    export LD_LIBRARY_PATH=/usr/pgsql-9.5/lib
+    export PGBINNEW=/usr/lib/postgresql/9.5/bin
+    export LD_LIBRARY_PATH=/usr/lib/postgresql/9.5/lib
     ;;
 *)
     echo_info "Unsupported NEW_VERSION of ${NEW_VERSION}."
@@ -92,23 +92,23 @@ esac
 case $OLD_VERSION in
 "12")
     echo_info "Setting PGBINOLD to ${OLD_VERSION}."
-    export PGBINOLD=/usr/pgsql-12/bin
+    export PGBINOLD=/usr/lib/postgresql/12/bin
     ;;
 "11")
     echo_info "Setting PGBINOLD to ${OLD_VERSION}."
-    export PGBINOLD=/usr/pgsql-11/bin
+    export PGBINOLD=/usr/lib/postgresql/11/bin
     ;;
 "10")
     echo_info "Setting PGBINOLD to ${OLD_VERSION}."
-    export PGBINOLD=/usr/pgsql-10/bin
+    export PGBINOLD=/usr/lib/postgresql/10/bin
     ;;
 "9.6")
     echo_info "Setting PGBINOLD to ${OLD_VERSION}."
-    export PGBINOLD=/usr/pgsql-9.6/bin
+    export PGBINOLD=/usr/lib/postgresql/9.6/bin
     ;;
 "9.5")
     echo_info "Setting PGBINOLD to ${OLD_VERSION}."
-    export PGBINOLD=/usr/pgsql-9.5/bin
+    export PGBINOLD=/usr/lib/postgresql/9.5/bin
     ;;
 *)
     echo_info "Unsupported OLD_VERSION of ${OLD_VERSION}."

@@ -15,7 +15,7 @@
 
 # pgadmin4 pgbadger pgpool
 for i in \
-postgres-gis postgres pgbouncer upgrade
+postgres-gis postgres pgbouncer upgrade pgbadger
 do
 	docker rmi -f  $CCP_IMAGE_PREFIX/radondb-$i:$CCP_IMAGE_TAG
 	docker rmi -f  radondb-$i

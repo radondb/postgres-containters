@@ -20,7 +20,7 @@ cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
 versions=( "$@" )
 if [ ${#versions[@]} -eq 0 ]; then
-	versions=( */ )
+	mapfile -t versions < <(ls -d [0-9]*)
 	json='{}'
 else
 	json="$(< versions.json)"

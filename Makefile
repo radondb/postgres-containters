@@ -1,20 +1,26 @@
 ifndef CCPROOT
-	export CCPROOT=$(GOPATH)/src/github.com/radondb/radondb-containers
+	export CCPROOT=$(shell pwd)
 endif
 
 # Default values if not already set
-CCP_BASEOS ?= alpine
+CCP_BASEOS ?= debian
 BASE_IMAGE_OS ?= $(CCP_BASEOS)
-CCP_PGVERSION ?= 13
-CCP_PG_FULLVERSION ?= 13.6
-CCP_PATRONI_VERSION ?= 2.1.2
-CCP_BACKREST_VERSION ?= 2.36
-CCP_VERSION ?= 5.0.5
+CCP_PGVERSION ?= 14
+CCP_PG_FULLVERSION ?= 14.2
+CCP_PATRONI_VERSION ?= 2.1.3
+CCP_BACKREST_VERSION ?= 2.37
+CCP_VERSION ?= 3.0.0
 CCP_POSTGIS_VERSION ?= 3.1
 PACKAGER ?= apt
+DOCKERBASEREGISTRY ?= docker.io/
+CCP_IMAGE_TAG ?= $(CCP_BASEOS)-$(CCP_PG_FULLVERSION)-$(CCP_VERSION)
+CCP_POSTGIS_IMAGE_TAG ?= $(CCP_BASEOS)-$(CCP_PG_FULLVERSION)-$(CCP_POSTGIS_VERSION)-$(CCP_VERSION)
+CCP_IMAGE_PREFIX ?= zhonghl003
+test:
+	@echo $(CCP_POSTGIS_IMAGE_TAG)
 
 # Valid values: buildah (default), docker
-IMGBUILDER ?= docker
+IMGBUILDER ?= buildah
 # Determines whether or not images should be pushed to the local docker daemon when building with
 # a tool other than docker (e.g. when building with buildah)
 IMG_PUSH_TO_DOCKER_DAEMON ?= false
@@ -28,7 +34,6 @@ ifneq ("$(IMG_ROOTLESS_BUILD)", "true")
 endif
 IMGCMDSTEM=$(IMGCMDSUDO) buildah bud --layers $(SQUASH)
 DFSET=$(CCP_BASEOS)
-DOCKERBASEREGISTRY=registry.access.redhat.com/
 
 # Default the buildah format to docker to ensure it is possible to pull the images from a docker
 # repository using docker (otherwise the images may not be recognized)
@@ -39,11 +44,11 @@ ifeq ("$(IMGBUILDER)","docker")
 	IMGCMDSTEM=docker build
 endif
 
-# Allows consolidation of alpine Dockerfile sets
-ifeq ("$(CCP_BASEOS)", "alpine")
-        DFSET=alpine
+# Allows consolidation of debian Dockerfile sets
+ifeq ("$(CCP_BASEOS)", "debian")
+        DFSET=debian
         PACKAGER=apt
-        BASE_IMAGE_OS=ubi8-minimal
+        BASE_IMAGE_OS=bullseye-slim
 endif
 
 .PHONY:	all license pgbackrest-images pg-independent-images pgimages
@@ -58,10 +63,10 @@ images = radondb-postgres \
 	# radondb-pgpool
 
 # Default target
-all: pgimages pg-independent-images pgbackrest-images
+all: ccbase-image pgimages pg-independent-images pgbackrest-images
 
 # Build images that either don't have a PG dependency or using the latest PG version is all that is needed
-pg-independent-images: pgbouncer pgadmin4
+pg-independent-images: pgbouncer 
 # pg-independent-images: pgbadger pgpool
 
 # Build images that require a specific postgres version - ordered for potential concurrent benefits
@@ -92,10 +97,10 @@ $(CCPROOT)/build/%/Dockerfile:
 # ----- Base Image -----
 ccbase-image: ccbase-image-$(IMGBUILDER)
 
-ccbase-image-build: build-pgbackrest license $(CCPROOT)/build/base/Dockerfile
+ccbase-image-build: $(CCPROOT)/build/base/Dockerfile_
 	$(IMGCMDSTEM) \
-		-f $(CCPROOT)/build/base/Dockerfile \
-		-t $(CCP_IMAGE_PREFIX)/radondb-base:$(CCP_IMAGE_TAG) \
+		-f $(CCPROOT)/build/base/Dockerfile_ \
+		-t $(CCP_IMAGE_PREFIX)/radondb-base:$(BASE_IMAGE_OS) \
 		--build-arg BASEOS=$(CCP_BASEOS) \
 		--build-arg RELVER=$(CCP_VERSION) \
 		--build-arg DFSET=$(DFSET) \
@@ -113,43 +118,19 @@ endif
 
 ccbase-image-docker: ccbase-image-build
 
-# ----- Base Image Ext -----
-ccbase-ext-image-build: ccbase-image $(CCPROOT)/build/base-ext/Dockerfile
-	$(IMGCMDSTEM) \
-		-f $(CCPROOT)/build/base-ext/Dockerfile \
-		-t $(CCP_IMAGE_PREFIX)/radondb-base-ext:$(CCP_IMAGE_TAG) \
-		--build-arg BASEOS=$(CCP_BASEOS) \
-		--build-arg BASEVER=$(CCP_VERSION) \
-		--build-arg PACKAGER=$(PACKAGER) \
-		--build-arg PREFIX=$(CCP_IMAGE_PREFIX) \
-		--build-arg PG_FULL=$(CCP_PG_FULLVERSION) \
-		$(CCPROOT)
 
-ccbase-ext-image-buildah: ccbase-ext-image-build ;
 # only push to docker daemon if variable IMG_PUSH_TO_DOCKER_DAEMON is set to "true"
 ifeq ("$(IMG_PUSH_TO_DOCKER_DAEMON)", "true")
 	sudo --preserve-env buildah push $(CCP_IMAGE_PREFIX)/radondb-base-ext:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-base-ext:$(CCP_IMAGE_TAG)
 endif
 
-ccbase-ext-image-docker: ccbase-ext-image-build
 
 # ----- Special case pg-based image (postgres) -----
 # Special case args: BACKREST_VER
-postgres-pgimg-build: ccbase-image $(CCPROOT)/build/postgres/Dockerfile
+postgres-pgimg-build:  $(CCPROOT)/$(CCP_PGVERSION)/bullseye/Dockerfile
 	$(IMGCMDSTEM) \
-		-f $(CCPROOT)/build/postgres/Dockerfile \
+		-f $(CCPROOT)/$(CCP_PGVERSION)/bullseye/Dockerfile \
 		-t $(CCP_IMAGE_PREFIX)/radondb-postgres:$(CCP_IMAGE_TAG) \
-		--build-arg BASEOS=$(CCP_BASEOS) \
-		--build-arg BASEVER=$(CCP_VERSION) \
-		--build-arg PG_FULL=$(CCP_PG_FULLVERSION) \
-		--build-arg PG_LBL=${subst .,,$(CCP_PGVERSION)} \
-		--build-arg PG_MAJOR=$(CCP_PGVERSION) \
-		--build-arg PREFIX=$(CCP_IMAGE_PREFIX) \
-		--build-arg BACKREST_VER=$(CCP_BACKREST_VERSION) \
-		--build-arg DFSET=$(DFSET) \
-		--build-arg PACKAGER=$(PACKAGER) \
-		--build-arg BASE_IMAGE_NAME=radondb-base \
-		--build-arg PATRONI_VER=$(CCP_PATRONI_VERSION) \
 		$(CCPROOT)
 
 postgres-pgimg-buildah: postgres-pgimg-build ;
@@ -160,36 +141,13 @@ endif
 
 postgres-pgimg-docker: postgres-pgimg-build
 
-# ----- Special case pg-based image (postgres-gis-base) -----
-# Used as the base for the postgres-gis image.
-postgres-gis-base-pgimg-build: ccbase-ext-image-build $(CCPROOT)/build/postgres/Dockerfile
-	$(IMGCMDSTEM) \
-		-f $(CCPROOT)/build/postgres/Dockerfile \
-		-t $(CCP_IMAGE_PREFIX)/radondb-postgres-gis-base:$(CCP_IMAGE_TAG) \
-		--build-arg BASEOS=$(CCP_BASEOS) \
-		--build-arg BASEVER=$(CCP_VERSION) \
-		--build-arg PG_FULL=$(CCP_PG_FULLVERSION) \
-		--build-arg PG_LBL=${subst .,,$(CCP_PGVERSION)} \
-		--build-arg PG_MAJOR=$(CCP_PGVERSION) \
-		--build-arg PREFIX=$(CCP_IMAGE_PREFIX) \
-		--build-arg BACKREST_VER=$(CCP_BACKREST_VERSION) \
-		--build-arg DFSET=$(DFSET) \
-		--build-arg PACKAGER=$(PACKAGER) \
-		--build-arg PATRONI_VER=$(CCP_PATRONI_VERSION) \
-		--build-arg BASE_IMAGE_NAME=radondb-base-ext \
-		$(CCPROOT)
 
-postgres-gis-base-pgimg-buildah: postgres-gis-base-pgimg-build ;
-# only push to docker daemon if variable IMG_PUSH_TO_DOCKER_DAEMON is set to "true"
-ifeq ("$(IMG_PUSH_TO_DOCKER_DAEMON)", "true")
-	sudo --preserve-env buildah push $(CCP_IMAGE_PREFIX)/radondb-postgres-gis-base:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-postgres-gis-base:$(CCP_IMAGE_TAG)
-endif
 
 # ----- Special case pg-based image (postgres-gis) -----
 # Special case args: POSTGIS_LBL
-postgres-gis-pgimg-build: $(CCPROOT)/build/postgres-gis/Dockerfile
+postgres-gis-pgimg-build: $(CCPROOT)/build/postgres-gis/Dockerfile_
 	$(IMGCMDSTEM) \
-		-f $(CCPROOT)/build/postgres-gis/Dockerfile \
+		-f $(CCPROOT)/build/postgres-gis/Dockerfile_ \
 		-t $(CCP_IMAGE_PREFIX)/radondb-postgres-gis:$(CCP_POSTGIS_IMAGE_TAG) \
 		--build-arg BASEOS=$(CCP_BASEOS) \
 		--build-arg BASEVER=$(CCP_VERSION) \
@@ -216,14 +174,15 @@ build-pgbackrest:
 	go build -o bin/pgbackrest/pgbackrest ./cmd/pgbackrest
 
 # Special case args: BACKREST_VER
-pgbackrest-pgimg-build: ccbase-image build-pgbackrest $(CCPROOT)/build/pgbackrest/Dockerfile
+pgbackrest-pgimg-build:  build-pgbackrest $(CCPROOT)/build/pgbackrest/Dockerfile_
 	$(IMGCMDSTEM) \
-		-f $(CCPROOT)/build/pgbackrest/Dockerfile \
+		-f $(CCPROOT)/build/pgbackrest/Dockerfile_ \
 		-t $(CCP_IMAGE_PREFIX)/radondb-pgbackrest:$(CCP_IMAGE_TAG) \
 		--build-arg BASEOS=$(CCP_BASEOS) \
 		--build-arg BASEVER=$(CCP_VERSION) \
 		--build-arg PG_FULL=$(CCP_PG_FULLVERSION) \
 		--build-arg PG_MAJOR=$(CCP_PGVERSION) \
+		--build-arg BASE_IMAGE_OS=$(BASE_IMAGE_OS) \
 		--build-arg PREFIX=$(CCP_IMAGE_PREFIX) \
 		--build-arg BACKREST_VER=$(CCP_BACKREST_VERSION) \
 		--build-arg PACKAGER=$(PACKAGER) \
@@ -240,19 +199,19 @@ pgbackrest-pgimg-docker: pgbackrest-pgimg-build
 # ----- Special case image (upgrade) -----
 
 # Special case args: UPGRADE_PG_VERSIONS (defines all versions of PG that will be installed)
-upgrade-img-build: ccbase-image $(CCPROOT)/build/upgrade/Dockerfile
+upgrade-img-build:  $(CCPROOT)/build/upgrade/Dockerfile_
 	$(IMGCMDSTEM) \
-		-f $(CCPROOT)/build/upgrade/Dockerfile \
+		-f $(CCPROOT)/build/upgrade/Dockerfile_ \
 		-t $(CCP_IMAGE_PREFIX)/radondb-upgrade:$(CCP_IMAGE_TAG) \
 		--build-arg BASEOS=$(CCP_BASEOS) \
 		--build-arg BASEVER=$(CCP_VERSION) \
 		--build-arg PG_FULL=$(CCP_PG_FULLVERSION) \
 		--build-arg PG_MAJOR=$(CCP_PGVERSION) \
 		--build-arg PREFIX=$(CCP_IMAGE_PREFIX) \
+		--build-arg BASE_IMAGE_OS=$(BASE_IMAGE_OS) \
 		--build-arg DFSET=$(DFSET) \
 		--build-arg PACKAGER=$(PACKAGER) \
-		--build-arg UPGRADE_PG_VERSIONS="$(shell find $(CCPROOT)/conf -type f -name "radondbpg*.repo" | \
-			grep -o [1-9][0-9])" \
+		--build-arg UPGRADE_PG_VERSIONS="$(shell ls -d [0-9]*)" \
 		$(CCPROOT)
 
 upgrade-img-buildah: upgrade-img-build ;
@@ -264,9 +223,9 @@ endif
 upgrade-img-docker: upgrade-img-build
 
 # ----- Extra images -----
-%-img-build:  $(CCPROOT)/build/%/Dockerfile
+%-img-build:  $(CCPROOT)/build/%/Dockerfile_
 	$(IMGCMDSTEM) \
-		-f $(CCPROOT)/build/$*/Dockerfile \
+		-f $(CCPROOT)/build/$*/Dockerfile_ \
 		-t $(CCP_IMAGE_PREFIX)/radondb-$*:$(CCP_IMAGE_TAG) \
 		--build-arg BASEOS=$(CCP_BASEOS) \
 		--build-arg BASEVER=$(CCP_VERSION) \
@@ -274,6 +233,7 @@ upgrade-img-docker: upgrade-img-build
 		--build-arg PG_MAJOR=$(CCP_PGVERSION) \
 		--build-arg PREFIX=$(CCP_IMAGE_PREFIX) \
 		--build-arg DFSET=$(DFSET) \
+		--build-arg BASE_IMAGE_OS=$(BASE_IMAGE_OS) \
 		--build-arg PACKAGER=$(PACKAGER) \
 		$(CCPROOT)
 
