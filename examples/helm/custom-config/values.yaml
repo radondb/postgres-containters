@@ -1,0 +1,18 @@
+name: custom-config
+container:
+  port: 5432
+  name: custom-config
+credentials:
+  primary: password
+  root: password
+  user: password
+serviceType: ClusterIP
+image:
+  repository: radondb
+  container: radondb-postgres
+  tag: centos8-13.6-5.0.5-0
+resources:
+  cpu: 200m
+  memory: 512Mi
+configMap:
+  name: custom-config
