@@ -131,6 +131,7 @@ postgres-pgimg-build:  $(CCPROOT)/$(CCP_PGVERSION)/bullseye/Dockerfile
 	$(IMGCMDSTEM) \
 		-f $(CCPROOT)/$(CCP_PGVERSION)/bullseye/Dockerfile \
 		-t $(CCP_IMAGE_PREFIX)/radondb-postgres:$(CCP_IMAGE_TAG) \
+		--build-arg PREFIX=$(CCP_IMAGE_PREFIX) \
 		$(CCPROOT)
 
 postgres-pgimg-buildah: postgres-pgimg-build ;
