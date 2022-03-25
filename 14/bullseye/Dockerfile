@@ -3,7 +3,8 @@
 #
 # PLEASE DO NOT EDIT IT DIRECTLY.
 #
-ARG 
+
+ARG PREFIX
 FROM ${PREFIX}/radondb-base:bullseye-slim
 
 RUN set -ex; \

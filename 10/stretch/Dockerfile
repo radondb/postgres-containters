@@ -4,6 +4,7 @@
 # PLEASE DO NOT EDIT IT DIRECTLY.
 #
 
+ARG PREFIX
 FROM ${PREFIX}/radondb-base:stretch-slim
 
 RUN set -ex; \
