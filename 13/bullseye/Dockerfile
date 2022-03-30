@@ -4,7 +4,6 @@
 # PLEASE DO NOT EDIT IT DIRECTLY.
 #
 
-ARG PGVERSION
 ARG PREFIX
 FROM ${PREFIX}/radondb-base:bullseye-slim
 
@@ -37,8 +36,8 @@ RUN set -eux; \
 	apt-get install -y --no-install-recommends ca-certificates wget; \
 	rm -rf /var/lib/apt/lists/*; \
 	dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
-	curl -L -o /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch"; \
-	curl -L -o  /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
+	curl -L -o /usr/local/bin/gosu "https://ghproxy.com/https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch"; \
+	curl -L -o  /usr/local/bin/gosu.asc "https://ghproxy.com/https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
 	export GNUPGHOME="$(mktemp -d)"; \
 	gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
 	gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
@@ -160,7 +159,7 @@ DEBIAN_FRONTEND=noninteractive \
 	apt-get install -y --no-install-recommends \
 	"postgresql-$PG_MAJOR=$PG_VERSION" \
 	; \
-	ln -s /usr/lib/postgresql/${PGVERSION} /usr/pgsql-${PGVERSION} ;\
+	ln -s /usr/lib/postgresql/$PG_MAJOR /usr/pgsql-$PG_MAJOR ;\
 	\
 	rm -rf /var/lib/apt/lists/*; \
 	\
