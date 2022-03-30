@@ -16,8 +16,7 @@ DOCKERBASEREGISTRY ?= docker.io/
 CCP_IMAGE_TAG ?= $(CCP_BASEOS)-$(CCP_PG_FULLVERSION)-$(CCP_VERSION)
 CCP_POSTGIS_IMAGE_TAG ?= $(CCP_BASEOS)-$(CCP_PG_FULLVERSION)-$(CCP_POSTGIS_VERSION)-$(CCP_VERSION)
 CCP_IMAGE_PREFIX ?= zhonghl003
-test:
-	@echo $(CCP_POSTGIS_IMAGE_TAG)
+
 
 # Valid values: buildah (default), docker
 IMGBUILDER ?= buildah
@@ -107,6 +106,7 @@ ccbase-image-build: $(CCPROOT)/build/base/Dockerfile_
 		--build-arg PACKAGER=$(PACKAGER) \
 		--build-arg DOCKERBASEREGISTRY=$(DOCKERBASEREGISTRY) \
 		--build-arg BASE_IMAGE_OS=$(BASE_IMAGE_OS) \
+		--build-arg PGVERSION=$(CCP_PGVERSION) \
 		--build-arg PG_LBL=${subst .,,$(CCP_PGVERSION)} \
 		$(CCPROOT)
 
@@ -132,6 +132,7 @@ postgres-pgimg-build:  $(CCPROOT)/$(CCP_PGVERSION)/bullseye/Dockerfile
 		-f $(CCPROOT)/$(CCP_PGVERSION)/bullseye/Dockerfile \
 		-t $(CCP_IMAGE_PREFIX)/radondb-postgres:$(CCP_IMAGE_TAG) \
 		--build-arg PREFIX=$(CCP_IMAGE_PREFIX) \
+		--build-arg PGVERSION=$(CCP_PGVERSION) \
 		$(CCPROOT)
 
 postgres-pgimg-buildah: postgres-pgimg-build ;
@@ -154,6 +155,7 @@ postgres-gis-pgimg-build: $(CCPROOT)/build/postgres-gis/Dockerfile_
 		--build-arg BASEVER=$(CCP_VERSION) \
 		--build-arg PG_FULL=$(CCP_PG_FULLVERSION) \
 		--build-arg PG_MAJOR=$(CCP_PGVERSION) \
+		--build-arg PGVERSION=$(CCP_PGVERSION) \
 		--build-arg PREFIX=$(CCP_IMAGE_PREFIX) \
 		--build-arg POSTGIS_LBL=$(subst .,,$(CCP_POSTGIS_VERSION)) \
 		--build-arg DFSET=$(DFSET) \
@@ -183,6 +185,7 @@ pgbackrest-pgimg-build:  build-pgbackrest $(CCPROOT)/build/pgbackrest/Dockerfile
 		--build-arg BASEVER=$(CCP_VERSION) \
 		--build-arg PG_FULL=$(CCP_PG_FULLVERSION) \
 		--build-arg PG_MAJOR=$(CCP_PGVERSION) \
+		--build-arg PGVERSION=$(CCP_PGVERSION) \
 		--build-arg BASE_IMAGE_OS=$(BASE_IMAGE_OS) \
 		--build-arg PREFIX=$(CCP_IMAGE_PREFIX) \
 		--build-arg BACKREST_VER=$(CCP_BACKREST_VERSION) \
@@ -208,6 +211,7 @@ upgrade-img-build:  $(CCPROOT)/build/upgrade/Dockerfile_
 		--build-arg BASEVER=$(CCP_VERSION) \
 		--build-arg PG_FULL=$(CCP_PG_FULLVERSION) \
 		--build-arg PG_MAJOR=$(CCP_PGVERSION) \
+		--build-arg PGVERSION=$(CCP_PGVERSION) \
 		--build-arg PREFIX=$(CCP_IMAGE_PREFIX) \
 		--build-arg BASE_IMAGE_OS=$(BASE_IMAGE_OS) \
 		--build-arg DFSET=$(DFSET) \
@@ -232,6 +236,7 @@ upgrade-img-docker: upgrade-img-build
 		--build-arg BASEVER=$(CCP_VERSION) \
 		--build-arg PG_FULL=$(CCP_PG_FULLVERSION) \
 		--build-arg PG_MAJOR=$(CCP_PGVERSION) \
+		--build-arg PGVERSION=$(CCP_PGVERSION) \
 		--build-arg PREFIX=$(CCP_IMAGE_PREFIX) \
 		--build-arg DFSET=$(DFSET) \
 		--build-arg BASE_IMAGE_OS=$(BASE_IMAGE_OS) \
