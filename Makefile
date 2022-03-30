@@ -19,7 +19,7 @@ CCP_IMAGE_PREFIX ?= zhonghl003
 
 
 # Valid values: buildah (default), docker
-IMGBUILDER ?= buildah
+IMGBUILDER ?= docker
 # Determines whether or not images should be pushed to the local docker daemon when building with
 # a tool other than docker (e.g. when building with buildah)
 IMG_PUSH_TO_DOCKER_DAEMON ?= false
