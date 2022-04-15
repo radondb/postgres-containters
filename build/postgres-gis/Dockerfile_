@@ -24,9 +24,9 @@ RUN mkdir -p /external_extensions/timescaledb && cd /external_extensions/timesca
 	set -eux;curl -SL https://github.com/timescale/timescaledb/$(curl -s https://github.com/timescale/timescaledb/releases | \
 	grep -m1 -Eo "archive/refs/tags/[^/]+\.tar\.gz") | tar --strip-components=1 -xzv -C /external_extensions/timescaledb ;\
 	else [ "${PG_MAJOR//.}}" -eq "11" ] \
-	curl -SL https://github.com/timescale/timescaledb/archive/refs/tags/2.4.0.tar.gz| tar --strip-components=1 -xzv -C /external_extensions/timescaledb ;\
+	curl -SL https://github.com/timescale/timescaledb/archive/refs/tags/2.3.0.tar.gz| tar --strip-components=1 -xzv -C /external_extensions/timescaledb ;\
 	fi; \
-	./bootstrap && cd build && make && make install ;
+	./bootstrap -DREGRESS_CHECKS=OFF && cd build && make && make install ;
 FROM ${PREFIX}/radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER}
 COPY --from=extension_builder /etc/apt/sources.list /etc/apt/sources.list
 COPY --from=extension_builder /etc/apt/sources.list.d/pgdg.list /etc/apt/sources.list.d/pgdg.list

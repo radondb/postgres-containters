@@ -20,7 +20,7 @@ test:
 	@echo $(CCP_POSTGIS_IMAGE_TAG)
 
 # Valid values: buildah (default), docker
-IMGBUILDER ?= buildah
+IMGBUILDER ?= docker
 # Determines whether or not images should be pushed to the local docker daemon when building with
 # a tool other than docker (e.g. when building with buildah)
 IMG_PUSH_TO_DOCKER_DAEMON ?= true
@@ -113,7 +113,7 @@ ccbase-image-build: $(CCPROOT)/build/base/Dockerfile_
 ccbase-image-buildah: ccbase-image-build ;
 # only push to docker daemon if variable IMG_PUSH_TO_DOCKER_DAEMON is set to "true"
 ifeq ("$(IMG_PUSH_TO_DOCKER_DAEMON)", "true")
-	sudo --preserve-env buildah push $(CCP_IMAGE_PREFIX)/radondb-base:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-base:$(CCP_IMAGE_TAG)
+	sudo --preserve-env docker push $(CCP_IMAGE_PREFIX)/radondb-base:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-base:$(CCP_IMAGE_TAG)
 endif
 
 ccbase-image-docker: ccbase-image-build
@@ -133,7 +133,7 @@ ccbase-ext-image-build: ccbase-image $(CCPROOT)/build/base-ext/Dockerfile
 ccbase-ext-image-buildah: ccbase-ext-image-build ;
 # only push to docker daemon if variable IMG_PUSH_TO_DOCKER_DAEMON is set to "true"
 ifeq ("$(IMG_PUSH_TO_DOCKER_DAEMON)", "true")
-	sudo --preserve-env buildah push $(CCP_IMAGE_PREFIX)/radondb-base-ext:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-base-ext:$(CCP_IMAGE_TAG)
+	sudo --preserve-env docker push $(CCP_IMAGE_PREFIX)/radondb-base-ext:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-base-ext:$(CCP_IMAGE_TAG)
 endif
 
 ccbase-ext-image-docker: ccbase-ext-image-build
@@ -160,7 +160,7 @@ postgres-pgimg-build: ccbase-image $(CCPROOT)/build/postgres/Dockerfile
 postgres-pgimg-buildah: postgres-pgimg-build ;
 # only push to docker daemon if variable IMG_PUSH_TO_DOCKER_DAEMON is set to "true"
 ifeq ("$(IMG_PUSH_TO_DOCKER_DAEMON)", "true")
-	sudo --preserve-env buildah push $(CCP_IMAGE_PREFIX)/radondb-postgres:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-postgres:$(CCP_IMAGE_TAG)
+	sudo --preserve-env docker push $(CCP_IMAGE_PREFIX)/radondb-postgres:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-postgres:$(CCP_IMAGE_TAG)
 endif
 
 postgres-pgimg-docker: postgres-pgimg-build
@@ -187,7 +187,7 @@ postgres-gis-base-pgimg-build: ccbase-ext-image-build $(CCPROOT)/build/postgres/
 postgres-gis-base-pgimg-buildah: postgres-gis-base-pgimg-build ;
 # only push to docker daemon if variable IMG_PUSH_TO_DOCKER_DAEMON is set to "true"
 ifeq ("$(IMG_PUSH_TO_DOCKER_DAEMON)", "true")
-	sudo --preserve-env buildah push $(CCP_IMAGE_PREFIX)/radondb-postgres-gis-base:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-postgres-gis-base:$(CCP_IMAGE_TAG)
+	sudo --preserve-env docker push $(CCP_IMAGE_PREFIX)/radondb-postgres-gis-base:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-postgres-gis-base:$(CCP_IMAGE_TAG)
 endif
 
 # ----- Special case pg-based image (postgres-gis) -----
@@ -209,7 +209,7 @@ postgres-gis-pgimg-build: $(CCPROOT)/build/postgres-gis/Dockerfile_
 postgres-gis-pgimg-buildah: postgres-gis-pgimg-build ;
 # only push to docker daemon if variable IMG_PUSH_TO_DOCKER_DAEMON is set to "true"
 ifeq ("$(IMG_PUSH_TO_DOCKER_DAEMON)", "true")
-	sudo --preserve-env buildah push $(CCP_IMAGE_PREFIX)/radondb-postgres-gis:$(CCP_POSTGIS_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-postgres-gis:$(CCP_POSTGIS_IMAGE_TAG)
+	sudo --preserve-env docker push $(CCP_IMAGE_PREFIX)/radondb-postgres-gis:$(CCP_POSTGIS_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-postgres-gis:$(CCP_POSTGIS_IMAGE_TAG)
 endif
 
 postgres-gis-pgimg-docker: postgres-gis-pgimg-build
@@ -238,7 +238,7 @@ pgbackrest-pgimg-build:  build-pgbackrest $(CCPROOT)/build/pgbackrest/Dockerfile
 pgbackrest-pgimg-buildah: pgbackrest-pgimg-build ;
 # only push to docker daemon if variable IMG_PUSH_TO_DOCKER_DAEMON is set to "true"
 ifeq ("$(IMG_PUSH_TO_DOCKER_DAEMON)", "true")
-	sudo --preserve-env buildah push $(CCP_IMAGE_PREFIX)/radondb-pgbackrest:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-pgbackrest:$(CCP_IMAGE_TAG)
+	sudo --preserve-env docker push $(CCP_IMAGE_PREFIX)/radondb-pgbackrest:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-pgbackrest:$(CCP_IMAGE_TAG)
 endif
 
 pgbackrest-pgimg-docker: pgbackrest-pgimg-build
@@ -264,7 +264,7 @@ upgrade-img-build: ccbase-image $(CCPROOT)/build/upgrade/Dockerfile
 upgrade-img-buildah: upgrade-img-build ;
 # only push to docker daemon if variable IMG_PUSH_TO_DOCKER_DAEMON is set to "true"
 ifeq ("$(IMG_PUSH_TO_DOCKER_DAEMON)", "true")
-	sudo --preserve-env buildah push $(CCP_IMAGE_PREFIX)/radondb-upgrade:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-upgrade:$(CCP_IMAGE_TAG)
+	sudo --preserve-env docker push $(CCP_IMAGE_PREFIX)/radondb-upgrade:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-upgrade:$(CCP_IMAGE_TAG)
 endif
 
 upgrade-img-docker: upgrade-img-build
@@ -287,7 +287,7 @@ upgrade-img-docker: upgrade-img-build
 %-img-buildah: %-img-build ;
 # only push to docker daemon if variable IMG_PUSH_TO_DOCKER_DAEMON is set to "true"
 ifeq ("$(IMG_PUSH_TO_DOCKER_DAEMON)", "true")
-	sudo --preserve-env buildah push $(CCP_IMAGE_PREFIX)/radondb-$*:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-$*:$(CCP_IMAGE_TAG)
+	sudo --preserve-env docker push $(CCP_IMAGE_PREFIX)/radondb-$*:$(CCP_IMAGE_TAG) docker-daemon:$(CCP_IMAGE_PREFIX)/radondb-$*:$(CCP_IMAGE_TAG)
 endif
 
 %-img-docker: %-img-build ;
