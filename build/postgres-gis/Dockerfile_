@@ -23,7 +23,7 @@ RUN mkdir -p /external_extensions/timescaledb && cd /external_extensions/timesca
 	if [ "${PG_MAJOR//.}" -gt "11" ]; then \
 	set -eux;curl -SL https://github.com/timescale/timescaledb/$(curl -s https://github.com/timescale/timescaledb/releases | \
 	grep -m1 -Eo "archive/refs/tags/[^/]+\.tar\.gz") | tar --strip-components=1 -xzv -C /external_extensions/timescaledb ;\
-	elif [ "${PG_MAJOR//.}}" -eq "11" ]; then \
+	elif [ "${PG_MAJOR//.}" -eq "11" ]; then \
 	curl -SL https://github.com/timescale/timescaledb/archive/refs/tags/2.3.0.tar.gz| tar --strip-components=1 -xzv -C /external_extensions/timescaledb ;\
 	fi; \
 	./bootstrap -DREGRESS_CHECKS=OFF && cd build && make && make install ;
