@@ -4,7 +4,6 @@
 # PLEASE DO NOT EDIT IT DIRECTLY.
 #
 
-ARG PGVERSION
 ARG PREFIX
 FROM ${PREFIX}/radondb-base:stretch-slim
 
@@ -164,7 +163,7 @@ echo 'deb http://deb.debian.org/debian stretch-backports main' >> /etc/apt/sourc
 	apt-get install -y --no-install-recommends \
 	"postgresql-$PG_MAJOR=$PG_VERSION" \
 	; \
-	ln -s /usr/lib/postgresql/${PGVERSION} /usr/pgsql-${PGVERSION} ;\
+	ln -s /usr/lib/postgresql/$PG_MAJOR /usr/pgsql-$PG_MAJOR ;\
 	\
 	rm -rf /var/lib/apt/lists/*; \
 	\
