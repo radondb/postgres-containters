@@ -21,6 +21,10 @@ RUN groupadd postgres -g 26 && useradd postgres -u 26 -g 26
 
 # Run postgres install in separate transaction ahead of backrest for postgres user
 RUN apt-get update ;apt-get install -y --no-install-recommends \
+	openssh-server \
+	openssh-clients \
+	bzip2 \
+	lz4 \
 	pgbackrest ;\
 	sed -i 's/^/#/g' /etc/pgbackrest.conf ;\
 	rm -rf /var/cache/apt/*

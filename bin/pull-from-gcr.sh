@@ -6,17 +6,20 @@ REGISTRY='us.gcr.io/container-suite'
 VERSION=${CCP_IMAGE_TAG?}
 GIS_VERSION=${CCP_POSTGIS_IMAGE_TAG?}
 IMAGES=(
+    radondb-pgadmin4
+    radondb-pgbadger
     radondb-pgbouncer
+    radondb-pgpool
     radondb-postgres
     radondb-upgrade
+    radondb-postgres-ha
     radondb-pgbackrest
-    # radondb-pgadmin4
-    # radondb-pgbadger
-    # radondb-pgpool
+    radondb-pgbackrest-repo
 )
 
 GIS_IMAGES=(
     radondb-postgres-gis
+    radondb-postgres-gis-ha
 )
 
 function echo_green() {
