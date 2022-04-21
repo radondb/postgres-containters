@@ -2,14 +2,12 @@ ARG BASEOS
 ARG BASEVER
 ARG PG_FULL
 ARG PREFIX
-FROM ${PREFIX}/radondb-postgres-gis-base:${BASEOS}-${PG_FULL}-${BASEVER}
-
-# For RHEL8 all arguments used in main code has to be specified after FROM
-ARG BASEOS
 ARG DFSET
 ARG PACKAGER
 ARG PG_MAJOR
 ARG POSTGIS_LBL
+FROM ${PREFIX}/radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER} AS extension_builder
+
 
 LABEL name="postgres-gis" \
 	summary="Includes PostGIS extensions on top of radondb-postgres" \
@@ -20,18 +18,38 @@ LABEL name="postgres-gis" \
 
 USER 0
 
-RUN if [ "$BASEOS" = "centos8" ] ; then \
-	${PACKAGER} -y install --nodocs \
-		--setopt=skip_missing_names_on_install=False \
-		--enablerepo="powertools" \
-		pgrouting${POSTGIS_LBL}_${PG_MAJOR//.} \
-		postgis${POSTGIS_LBL}_${PG_MAJOR//.} \
-		postgis${POSTGIS_LBL}_${PG_MAJOR//.}-client \
-		postgresql${PG_MAJOR//.}-plperl \
-		postgresql${PG_MAJOR//.}-pltcl \
-	&& ${PACKAGER} -y clean all ; \
-fi
+
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update ;apt-get install -y --no-install-recommends \
+	postgresql-${PG_MAJOR//.}-pgrouting \
+	openssh-server \
+	postgresql-${PG_MAJOR//.}-pgaudit \
+	postgresql-${PG_MAJOR//.}-partman \
+	postgresql-${PG_MAJOR//.}-cron \
+	pgbackrest \
+	psmisc \
+	postgresql-${PG_MAJOR//.}-wal2json \
+	curl \
+	file \
+	gettext \
+	hostname \
+	procps \
+	unzip \
+	bzip2 \
+	lz4 \
+	krb5-user \
+	patroni \
+	postgresql-${PG_MAJOR//.}-postgis-3 \
+	postgresql-plperl-${PG_MAJOR//.} \
+	postgresql-pltcl-${PG_MAJOR//.} ;\
+	sed -i 's/^/#/g' /etc/pgbackrest.conf ;\
+	rm -rf /var/cache/apt/*
+
 # open up the postgres port
+EXPOSE 5432
+
 EXPOSE 5432
 
 ADD bin/postgres-gis /opt/radondb/bin/postgres

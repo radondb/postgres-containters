@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2016 - 2022 Crunchy Data Solutions, Inc.
+# Copyright 2016 - 2021 Crunchy Data Solutions, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,23 +14,22 @@
 # limitations under the License.
 
 # Dependency Versions
-PGMONITOR_COMMIT='v4.5-RC3'
+PGMONITOR_COMMIT='main'
 OPENSHIFT_CLIENT='https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz'
 CERTSTRAP_VERSION=1.1.1
 YQ_VERSION=3.3.0
 
-apt-get  -y install  net-tools  wget unzip git
+# sudo yum -y install net-tools bind-utils wget unzip git
 
-which docker
-if [ $? -eq 1 ]; then
-        echo "installing buildah"
-        sudo apt-get  -y install docker.io docker
-fi
+#
+# download the yq container dependency
+#
+curl -Lo $CCPROOT/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
 
 
 
 # manually install certstrap into $GOBIN for running the SSL examples
-curl -L -o $CCPROOT/certstrap https://github.com/square/certstrap/releases/download/v${CERTSTRAP_VERSION}/certstrap-v${CERTSTRAP_VERSION}-linux-amd64 && \
+curl -Lo $CCPROOT/certstrap https://github.com/square/certstrap/releases/download/v${CERTSTRAP_VERSION}/certstrap-v${CERTSTRAP_VERSION}-linux-amd64 && \
     mv $CCPROOT/certstrap $GOBIN && \
     chmod +x $GOBIN/certstrap
 
@@ -39,6 +38,6 @@ if [[ -d ${CCPROOT?}/tools/pgmonitor ]]
 then
     rm -rf ${CCPROOT?}/tools/pgmonitor
 fi
-git clone https://github.com/CrunchyData/pgmonitor.git ${CCPROOT?}/tools/pgmonitor
+git clone https://github.com/zhl003/pgmonitor.git ${CCPROOT?}/tools/pgmonitor
 cd ${CCPROOT?}/tools/pgmonitor
 git checkout ${PGMONITOR_COMMIT?}

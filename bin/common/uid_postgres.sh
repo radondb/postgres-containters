@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2018 - 2022 Crunchy Data Solutions, Inc.
+# Copyright 2018 - 2021 Crunchy Data Solutions, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,7 +14,7 @@
 # limitations under the License.
 
 RADONDB_DIR=${RADONDB_DIR:-'/opt/radondb'}
-
+    
 source "${RADONDB_DIR}/bin/uid_postgres_no_exec.sh"
 
 exec "$@"
