@@ -9,7 +9,7 @@ enable_debugging
 env_check_err "MODE"
 
 echo_info "Image mode found: ${MODE}"
-case $MODE in
+case $MODE in 
     postgres)
       echo_info "Starting in 'postgres' mode"
       exec "${RADONDB_DIR}/bin/postgres/start.sh"

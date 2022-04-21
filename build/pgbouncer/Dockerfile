@@ -1,8 +1,9 @@
 ARG BASEOS
 ARG BASEVER
 ARG PG_FULL
+ARG BASE_IMAGE_OS
 ARG PREFIX
-FROM ${PREFIX}/radondb-base:${BASEOS}-${PG_FULL}-${BASEVER}
+FROM ${PREFIX}/radondb-base:${BASE_IMAGE_OS}
 
 # For RHEL8 all arguments used in main code has to be specified after FROM
 ARG DFSET
@@ -17,10 +18,9 @@ LABEL name="pgbouncer" \
 	io.k8s.display-name="pgBouncer" \
 	io.openshift.tags="postgresql,postgres,pooling,pgbouncer,database,radondb"
 
-RUN ${PACKAGER} -y install --nodocs \
-	--disablerepo="epel" \
-	pgbouncer \
-	&& ${PACKAGER} -y clean all
+RUN apt-get update ;apt-get install -y --no-install-recommends \
+	pgbouncer ;\
+	rm -rf /var/cache/apt/*
 
 # Preserving PGVERSION out of paranoia
 ENV PGVERSION="${PG_MAJOR}"

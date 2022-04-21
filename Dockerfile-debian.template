@@ -1,5 +1,8 @@
 ARG PREFIX
-FROM ${PREFIX}/radondb-base:{{ env.variant }}-slim
+ARG BASEOS
+ARG PG_FULL
+ARG BASEVER
+FROM ${PREFIX}/radondb-base:${BASEOS}-${PG_FULL}-${BASEVER}
 
 RUN set -ex; \
 	if ! command -v gpg > /dev/null; then \

@@ -1,0 +1,7 @@
+---
+bootstrap:
+  dcs:
+    postgresql:
+      parameters:
+        archive_command: "source /opt/radondb/bin/postgres-ha/pgbackrest/pgbackrest-archive-push-local-s3.sh %p"
+ 

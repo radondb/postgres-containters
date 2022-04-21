@@ -66,13 +66,13 @@ create_pgbackrest_dirs() {
     else
         repo_dir="${PGBACKREST_REPO1_PATH}"
     fi
-
+    
     if [[ ! -d "${repo_dir}" ]]
     then
         mkdir -p "${repo_dir}"
         echo_info "pgBackRest: Created pgbackrest repository directory ${repo_dir}"
     fi
-
+    
     if [[ ! -d "${PGBACKREST_LOG_PATH}" ]]
     then
         mkdir -p "${PGBACKREST_LOG_PATH}"
@@ -112,10 +112,10 @@ fi
 # Create stanza
 if [[ "${BACKREST_SKIP_CREATE_STANZA}" == "true" ]]
 then
-    echo_info "pgBackRest: BACKREST_SKIP_CREATE_STANZA is 'true'.  Skipping stanza creation.."
+    echo_info "pgBackRest: BACKREST_SKIP_CREATE_STANZA is 'true'.  Skipping stanza creation.." 
 else
     echo_info "pgBackRest: The following pgbackrest env vars have been set:"
-    ( set -o posix ; set | grep -oP "^PGBACKREST.*" | sed -e 's/\(KEY\|PASS\|SECRET\)=.*/\1=*********/' )
+    ( set -o posix ; set | grep -oP "^PGBACKREST.*" )
 
     echo_info "pgBackRest: Executing 'stanza-create' to create stanza '${PGBACKREST_STANZA}'.."
     pgbackrest stanza-create --no-online --log-level-console=info \

@@ -2,15 +2,15 @@ ARG BASEOS
 ARG BASEVER
 ARG PG_FULL
 ARG PREFIX
+ARG BASE_IMAGE_OS
 FROM golang:1.15.5 as badgerserver-build
-WORKDIR /go/src/github.com/radondb/radondb-containers
-ADD ./badger ./badger
+WORKDIR /
+ADD badger badger
 RUN CGO_ENABLED=0 GOOS=linux go build -a -o badgerserver ./badger
 
-FROM ${PREFIX}/radondb-base:${BASEOS}-${PG_FULL}-${BASEVER}
+FROM ${PREFIX}/radondb-base:${BASE_IMAGE_OS}
 
 # For RHEL8 all arguments used in main code has to be specified after FROM
-ARG BASEOS
 ARG DFSET
 ARG PACKAGER
 
@@ -22,25 +22,20 @@ LABEL name="pgbadger" \
 	io.k8s.description="pgBadger" \
 	io.k8s.display-name="pgBadger" \
 	io.openshift.tags="postgresql,postgres,monitoring,pgbadger,database,radondb"
-
-RUN if [ "$DFSET" = "centos" ] ; then \
-       ${PACKAGER} -y install --nodocs \
-                --enablerepo="epel" \
-                --setopt=skip_missing_names_on_install=False \
-                pgbadger \
-        && ${PACKAGER} -y clean all ; \
-fi
-
-
 # Preserving PGVERSION out of paranoia
 ENV PGVERSION="${PGMAJOR}"
 
 RUN groupadd -g 26 postgres && useradd -g 26 -u 26 postgres
+RUN apt-get update ;apt-get install -y --no-install-recommends \
+	pgbadger ;\
+	rm -rf /var/cache/apt/*
+
+
 
 RUN mkdir -p /opt/radondb/bin /opt/radondb/conf /report
 
 COPY --from=badgerserver-build \
-	/go/src/github.com/radondb/radondb-containers/badgerserver \
+	/badgerserver \
 	/opt/radondb/bin
 ADD conf/pgbadger /opt/radondb/conf
 ADD bin/common /opt/radondb/bin
