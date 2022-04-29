@@ -3,7 +3,7 @@ ARG BASEVER
 ARG PG_FULL
 ARG BASE_IMAGE_OS
 ARG PREFIX
-FROM ${PREFIX}/radondb-base:${BASE_IMAGE_OS}
+FROM ${PREFIX}/radondb-base:${BASEOS}-${PG_FULL}-${BASEVER}
 
 # For RHEL8 all arguments used in main code has to be specified after FROM
 ARG DFSET

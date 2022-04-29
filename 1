@@ -1,0 +1,209 @@
+NWRAP_ERROR(1) - nwrap_files_cache_reload: Unable to open '/tmp/nss_wrapper/postgres/passwd' readonly -1:No such file or directory
+NWRAP_ERROR(1) - nwrap_files_getpwuid: Error loading passwd file
+nss_wrapper: user exists
+nss_wrapper: group exists
+nss_wrapper: environment configured
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: postgres-ha pre-bootstrap starting...[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: pgBackRest auto-config disabled[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: PGHA_PGBACKREST_LOCAL_S3_STORAGE, PGHA_PGBACKREST_LOCAL_GCS_STORAGE and PGHA_PGBACKREST_INITIALIZE will be ignored if provided[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Defaults have been set for the following postgres-ha auto-configuration env vars: PGHA_DEFAULT_CONFIG, PGHA_BASE_BOOTSTRAP_CONFIG, PGHA_BASE_PG_CONFIG[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Defaults have been set for the following postgres-ha env vars: PGHA_PATRONI_PORT[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Defaults have been set for the following Patroni env vars: PATRONI_NAME, PATRONI_RESTAPI_LISTEN, PATRONI_RESTAPI_CONNECT_ADDRESS, PATRONI_POSTGRESQL_LISTEN, PATRONI_POSTGRESQL_CONNECT_ADDRESS[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Setting postgres-ha configuration for database user credentials[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Setting 'pguser' credentials using file system[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Setting 'superuser' credentials using file system[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Setting 'replicator' credentials using file system[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Applying base bootstrap config to postgres-ha configuration[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Applying base postgres config to postgres-ha configuration[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Applying pgbackrest config to postgres-ha configuration[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Applying standard (non-TLS) remote connection configuration to pg_hba.conf[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Custom postgres-ha configuration file not detected[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Finished building postgres-ha configuration file '/tmp/postgres-ha-bootstrap.yaml'[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: postgres-ha pre-bootstrap complete!  The following configuration will be utilized to initialize [0m
+******************************
+postgres-ha (PGHA) env vars:
+******************************
+PGHA_BASE_PG_CONFIG=true
+PGHA_PATRONI_PORT=8009
+PGHA_PG_PORT=5432
+PGHA_PGBACKREST_LOCAL_S3_STORAGE=false
+PGHA_SYNC_REPLICATION=false
+PGHA_USER=postgres
+PGHA_INIT=true
+PGHA_DEFAULT_CONFIG=true
+PGHA_PASSWORD_TYPE=
+PGHA_REPLICA_REINIT_ON_START_FAIL=true
+PGHA_PGBACKREST=true
+PGHA_BASE_BOOTSTRAP_CONFIG=true
+PGHA_PGBACKREST_S3_VERIFY_TLS=false
+PGHA_STANDBY=false
+PGHA_PGBACKREST_LOCAL_GCS_STORAGE=false
+PGHA_TLS_ONLY=false
+PGHA_TLS_ENABLED=false
+PGHA_DATABASE=demo1
+******************************
+Patroni env vars:
+******************************
+PATRONI_POSTGRESQL_CONNECT_ADDRESS=10.42.0.61:5432
+PATRONI_POSTGRESQL_LISTEN=0.0.0.0:5432
+PATRONI_NAME=demo1-64bc64dd6b-h2ht5
+PATRONI_SCOPE=demo1
+PATRONI_RESTAPI_LISTEN=0.0.0.0:8009
+PATRONI_POSTGRESQL_DATA_DIR=/pgdata/demo1
+PATRONI_RESTAPI_CONNECT_ADDRESS=10.42.0.61:8009
+PATRONI_LOG_LEVEL=INFO
+PATRONI_KUBERNETES_LABELS={vendor: "radondb"}
+PATRONI_KUBERNETES_SCOPE_LABEL=radondb-pgha-scope
+PATRONI_KUBERNETES_NAMESPACE=p1
+******************************
+Patroni bootstrap method: initdb
+******************************
+Patroni configuration file:
+******************************
+bootstrap:
+  method: initdb
+  pgbackrest_init:
+    command: '/opt/radondb/bin/postgres-ha/pgbackrest/pgbackrest-create-replica.sh
+      primary'
+    keep_existing_recovery_conf: true
+  existing_init:
+    command: '/opt/radondb/bin/postgres-ha/bootstrap/create-from-existing.sh'
+    keep_existing_recovery_conf: true
+  dcs:
+    postgresql:
+      parameters:
+        jit: off
+        unix_socket_directories: /tmp
+        wal_level: logical
+        archive_mode: on
+        archive_command: 'source /opt/radondb/bin/postgres-ha/pgbackrest/pgbackrest-set-env.sh
+          && pgbackrest archive-push "%p"'
+        archive_timeout: 60
+        log_directory: pg_log
+        shared_buffers: 128MB
+        temp_buffers: 8MB
+        log_min_duration_statement: 60000
+        log_statement: none
+        work_mem: 4MB
+        max_wal_senders: 6
+        shared_preload_libraries: pgaudit.so,pg_stat_statements.so,pgnodemx.so
+      use_slots: false
+      recovery_conf:
+        restore_command: 'source /opt/radondb/bin/postgres-ha/pgbackrest/pgbackrest-set-env.sh
+          && pgbackrest archive-get %f "%p"'
+      use_pg_rewind: true
+  post_bootstrap: /opt/radondb/bin/postgres-ha/bootstrap/post-bootstrap.sh
+  initdb:
+  - encoding: UTF8
+  - data-checksums
+postgresql:
+  use_unix_socket: true
+  pgpass: /tmp/.pgpass
+  create_replica_methods:
+  - pgbackrest
+  - basebackup
+  pgbackrest:
+    command: '/opt/radondb/bin/postgres-ha/pgbackrest/pgbackrest-create-replica.sh
+      replica'
+    keep_data: true
+    no_params: true
+  pgbackrest_standby:
+    command: '/opt/radondb/bin/postgres-ha/pgbackrest/pgbackrest-create-replica.sh
+      standby'
+    keep_data: true
+    no_params: true
+    no_master: 1
+  remove_data_directory_on_rewind_failure: true
+  callbacks:
+    on_role_change: /opt/radondb/bin/postgres-ha/callbacks/pgha-on-role-change.sh
+  pg_hba:
+  - local all postgres peer
+  - host replication primaryuser 0.0.0.0/0 md5
+  - host all primaryuser 0.0.0.0/0 reject
+  - host all all 0.0.0.0/0 md5
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Applying SSHD..[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: nss_wrapper: ssh configured[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Checking for SSH Host Keys in /sshd..[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Checking for authorized_keys in /sshd[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Checking for sshd_config in /sshd[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Starting SSHD..[0m
+WARNING: 'UsePAM no' is not supported in Fedora and may cause several problems.
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Starting background process to monitor Patroni initization and restart the database if needed[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Initializing cluster bootstrap with command: '/usr/local/bin/patroni /tmp/postgres-ha-bootstrap.yaml'[0m
+[0;32mFri Apr 22 13:45:18 CST 2022 INFO: Running Patroni as PID 1[0m
+2022-04-22 13:45:19,032 INFO: No PostgreSQL configuration items changed, nothing to reload.
+2022-04-22 13:45:19,034 INFO: Lock owner: None; I am demo1-64bc64dd6b-h2ht5
+2022-04-22 13:45:19,049 INFO: trying to bootstrap a new cluster
+The files belonging to this database system will be owned by user "postgres".
+This user must also own the server process.
+
+The database cluster will be initialized with locale "en_US.utf-8".
+The default text search configuration will be set to "english".
+
+Data page checksums are enabled.
+
+fixing permissions on existing directory /pgdata/demo1 ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... posix
+selecting default max_connections ... 100
+selecting default shared_buffers ... 128MB
+selecting default time zone ... Asia/Shanghai
+creating configuration files ... ok
+running bootstrap script ... ok
+performing post-bootstrap initialization ... ok
+syncing data to disk ... ok
+
+
+Success. You can now start the database server using:
+
+    /usr/pgsql-13/bin/pg_ctl -D /pgdata/demo1 -l logfile start
+
+initdb: warning: enabling "trust" authentication for local connections
+You can change this by editing pg_hba.conf or using the option -A, or
+--auth-local and --auth-host, the next time you run initdb.
+2022-04-22 13:45:19.805 CST [173] LOG:  pgaudit extension initialized
+2022-04-22 13:45:19,809 INFO: postmaster pid=173
+2022-04-22 13:45:19.814 CST [173] LOG:  redirecting log output to logging collector process
+2022-04-22 13:45:19.814 CST [173] HINT:  Future log output will appear in directory "pg_log".
+/tmp:5432 - no response
+/tmp:5432 - accepting connections
+/tmp:5432 - accepting connections
+2022-04-22 13:45:20,831 INFO: establishing a new patroni connection to the postgres cluster
+2022-04-22 13:45:20,846 INFO: running post_bootstrap
+[0;32mFri Apr 22 13:45:20 CST 2022 INFO: postgres-ha post-bootstrap starting[0m
+[0;32mFri Apr 22 13:45:20 CST 2022 INFO: Using default setup.sql[0m
+[0;32mFri Apr 22 13:45:20 CST 2022 INFO: Running /opt/radondb/bin/postgres-ha/sql/setup.sql file[0m
+SET
+[0;32mFri Apr 22 13:45:20 CST 2022 INFO: PGHA_INIT is 'true', waiting to initialize as primary[0m
+CREATE EXTENSION
+CREATE EXTENSION
+CREATE ROLE
+ALTER ROLE
+CREATE DATABASE
+GRANT
+You are now connected to database "demo1" as user "postgres".
+CREATE EXTENSION
+CREATE EXTENSION
+CREATE SCHEMA
+[0;32mFri Apr 22 13:45:20 CST 2022 INFO: postgres-ha post-bootstrap complete[0m
+2022-04-22 13:45:20,939 WARNING: Could not activate Linux watchdog device: "Can't open watchdog device: [Errno 2] No such file or directory: '/dev/watchdog'"
+2022-04-22 13:45:20,942 INFO: Reaped pid=213, exit status=0
+2022-04-22 13:45:21,049 INFO: initialized a new cluster
+[0;32mFri Apr 22 13:45:21 CST 2022 INFO: Applying enahncement modules[0m
+[0;32mFri Apr 22 13:45:21 CST 2022 INFO: Applying module /opt/radondb/bin/modules/pgaudit.sh[0m
+[0;32mFri Apr 22 13:45:21 CST 2022 INFO: Applying module /opt/radondb/bin/modules/pgmonitor.sh[0m
+[0;32mFri Apr 22 13:45:21 CST 2022 INFO: PGMONITOR_PASSWORD detected.  Enabling pgMonitor support.[0m
+[0;32mFri Apr 22 13:45:21 CST 2022 INFO: Waiting for PostgreSQL to be ready..[0m
+/tmp:5432 - accepting connections
+[0;32mFri Apr 22 13:45:21 CST 2022 INFO: Using setup file '/opt/radondb/bin/modules/pgexporter/pg13/setup.sql' for pgMonitor[0m
+[0;32mFri Apr 22 13:45:21 CST 2022 INFO: Node demo1-64bc64dd6b-h2ht5 fully initialized for cluster demo1 and is ready for use[0m
+2022-04-22 13:45:31,505 INFO: no action. I am (demo1-64bc64dd6b-h2ht5) the leader with the lock
+2022-04-22 13:45:31,564 INFO: no action. I am (demo1-64bc64dd6b-h2ht5) the leader with the lock
+2022-04-22 13:45:42,061 INFO: no action. I am (demo1-64bc64dd6b-h2ht5) the leader with the lock
+2022-04-22 13:45:52,068 INFO: no action. I am (demo1-64bc64dd6b-h2ht5) the leader with the lock
+2022-04-22 13:46:02,017 INFO: no action. I am (demo1-64bc64dd6b-h2ht5) the leader with the lock
+2022-04-22 13:46:12,069 INFO: no action. I am (demo1-64bc64dd6b-h2ht5) the leader with the lock
+2022-04-22 13:46:22,020 INFO: no action. I am (demo1-64bc64dd6b-h2ht5) the leader with the lock
+2022-04-22 13:46:32,016 INFO: no action. I am (demo1-64bc64dd6b-h2ht5) the leader with the lock
+2022-04-22 13:46:42,050 INFO: no action. I am (demo1-64bc64dd6b-h2ht5) the leader with the lock
+2022-04-22 13:46:52,033 INFO: no action. I am (demo1-64bc64dd6b-h2ht5) the leader with the lock

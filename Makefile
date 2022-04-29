@@ -363,3 +363,13 @@ postgres-gis-ha-pgimg-build: postgres-gis-pgimg-build $(CCPROOT)/build/postgres-
 		--build-arg DFSET=$(DFSET) \
 		--build-arg PACKAGER=$(PACKAGER) \
 		$(CCPROOT)
+pgbackrest-repo-pgimg-docker: pgbackrest-repo-pgimg-build
+pgbackrest-repo-pgimg-build: ccbase-image build-pgbackrest pgbackrest $(CCPROOT)/build/pgbackrest-repo/Dockerfile
+	$(IMGCMDSTEM) \
+		-f $(CCPROOT)/build/pgbackrest-repo/Dockerfile \
+		-t $(CCP_IMAGE_PREFIX)/radondb-pgbackrest-repo:$(CCP_IMAGE_TAG) \
+		--build-arg BASEOS=$(CCP_BASEOS) \
+		--build-arg BASEVER=$(CCP_VERSION) \
+		--build-arg PG_FULL=$(CCP_PG_FULLVERSION) \
+		--build-arg PREFIX=$(CCP_IMAGE_PREFIX) \
+		$(CCPROOT)

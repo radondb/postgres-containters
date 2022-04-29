@@ -56,4 +56,4 @@ ENTRYPOINT ["/opt/radondb/bin/postgres-ha/bootstrap-postgres-ha.sh"]
 
 USER 26
 
-CMD ["/usr/local/bin/patroni"]
+CMD ["/usr/bin/patroni"]
