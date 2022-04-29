@@ -71,6 +71,7 @@ RUN apt-get update ;apt-get install -y --no-install-recommends \
 	patroni \
 	postgresql-${PG_MAJOR//.}-postgis-3 \
 	postgresql-plperl-${PG_MAJOR//.} \
+	postgresql-${PG_MAJOR//.}-plr \
 	postgresql-pltcl-${PG_MAJOR//.} ;\
 	sed -i 's/^/#/g' /etc/pgbackrest.conf ;\
 	rm -rf /var/cache/apt/*

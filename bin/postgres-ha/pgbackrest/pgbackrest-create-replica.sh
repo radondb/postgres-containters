@@ -84,7 +84,7 @@ fi
 
 # for an S3 repo, if TLS verification is disabled, pass in the appropriate flag
 # otherwise, leave the default behavior and verify the S3 server certificate
-if [[ ${replica_bootstrap_repo_type} == "s3" && ${PGHA_PGBACKREST_S3_VERIFY_TLS} == "false" ]]
+if [[ ${PGHA_PGBACKREST_S3_VERIFY_TLS} == "false" ]]
 then
     restore_cmd_args+=("--no-repo1-s3-verify-tls")
 fi
