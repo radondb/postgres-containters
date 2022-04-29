@@ -17,10 +17,11 @@ LABEL name="pgpool" \
 	io.k8s.display-name="pgpool II" \
 	io.openshift.tags="postgresql,postgres,pgpool,database,radondb"
 
-RUN ${PACKAGER} -y install --nodocs \
-		pgpool-II_${PG_MAJOR//.} \
-		pgpool-II_${PG_MAJOR//.}-extensions \
-	&& ${PACKAGER} -y clean all
+RUN apt-get -y update && \
+	apt-get -y install \
+	pgpool2 \
+		postgresql-${PG_MAJOR//.}-pgpool2; \
+	rm -rf /var/cache/apt/* /tmp/*
 
 # Preserving PGVERSION out of paranoia
 ENV PGVERSION="${PG_MAJOR}"
@@ -31,8 +32,8 @@ ADD bin/pgpool /opt/radondb/bin
 ADD bin/common /opt/radondb/bin
 ADD conf/pgpool /opt/radondb/conf
 
-RUN ln -sf /opt/radondb/conf/pool_hba.conf /etc/pgpool-II_${PG_MAJOR//.}/pool_hba.conf \
-	&& ln -sf /opt/radondb/conf/pgpool/pool_passwd /etc/pgpool-II_${PG_MAJOR//.}/pool_passwd
+RUN ln -sf /opt/radondb/conf/pool_hba.conf /etc/pgpool2/pool_hba.conf \
+	&& ln -sf /opt/radondb/conf/pgpool/pool_passwd /etc/pgpool2/pool_passwd
 
 RUN chgrp -R 0 /opt/radondb && \
 	chmod -R g=u /opt/radondb

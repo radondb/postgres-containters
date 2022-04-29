@@ -8,7 +8,7 @@ WORKDIR /
 ADD badger badger
 RUN CGO_ENABLED=0 GOOS=linux go build -a -o badgerserver ./badger
 
-FROM ${PREFIX}/radondb-base:${BASE_IMAGE_OS}
+FROM ${PREFIX}/radondb-base:${BASEOS}-${PG_FULL}-${BASEVER}
 
 # For RHEL8 all arguments used in main code has to be specified after FROM
 ARG DFSET

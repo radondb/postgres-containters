@@ -3,7 +3,7 @@ ARG BASEVER
 ARG PG_FULL
 ARG PREFIX
 ARG BASE_IMAGE_OS
-FROM ${PREFIX}/radondb-base:${BASE_IMAGE_OS}
+FROM ${PREFIX}/radondb-base:${BASEOS}-${PG_FULL}-${BASEVER}
 
 # For RHEL8 all arguments used in main code has to be specified after FROM
 ARG PACKAGER
@@ -22,7 +22,7 @@ RUN groupadd postgres -g 26 && useradd postgres -u 26 -g 26
 # Run postgres install in separate transaction ahead of backrest for postgres user
 RUN apt-get update ;apt-get install -y --no-install-recommends \
 	openssh-server \
-	openssh-clients \
+	openssh-client \
 	bzip2 \
 	lz4 \
 	pgbackrest ;\
