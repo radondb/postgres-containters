@@ -8,7 +8,7 @@ GIS_VERSION=${CCP_POSTGIS_IMAGE_TAG?}
 IMAGES=(
     radondb-pgbackrest
     radondb-pgbackrest-repo
-    radondb-pgadmin4
+#    radondb-pgadmin4
     radondb-pgbadger
     radondb-pgbouncer
     radondb-pgpool
