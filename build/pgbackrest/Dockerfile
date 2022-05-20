@@ -25,8 +25,8 @@ RUN apt-get update ;apt-get install -y --no-install-recommends \
 	openssh-client \
 	bzip2 \
 	lz4 \
-	pgbackrest ;\
-	sed -i 's/^/#/g' /etc/pgbackrest.conf ;\
+	pgbackrest && \
+	sed -i 's/^/#/g' /etc/pgbackrest.conf && \
 	rm -rf /var/cache/apt/*
 
 

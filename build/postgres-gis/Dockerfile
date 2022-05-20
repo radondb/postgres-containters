@@ -43,8 +43,8 @@ RUN apt-get update ;apt-get install -y --no-install-recommends \
 	patroni \
 	postgresql-${PG_MAJOR//.}-postgis-3 \
 	postgresql-plperl-${PG_MAJOR//.} \
-	postgresql-pltcl-${PG_MAJOR//.} ;\
-	sed -i 's/^/#/g' /etc/pgbackrest.conf ;\
+	postgresql-pltcl-${PG_MAJOR//.} && \
+	sed -i 's/^/#/g' /etc/pgbackrest.conf && \
 	rm -rf /var/cache/apt/*
 
 # open up the postgres port
