@@ -1,0 +1,929 @@
+docker build \
+	-f /root/cdev/src/github.com/radondb/postgres-containters/build/base/Dockerfile \
+	-t radondb/radondb-base:debian-11.16-2.1.1 \
+	--build-arg BASEOS=debian \
+	--build-arg RELVER=2.1.1 \
+	--build-arg DFSET=debian \
+	--build-arg PACKAGER=apt \
+	--build-arg DOCKERBASEREGISTRY=docker.io/ \
+	--build-arg BASE_IMAGE_OS=bullseye-slim \
+	--build-arg PG_LBL=11 \
+	/root/cdev/src/github.com/radondb/postgres-containters
+Sending build context to Docker daemon  78.74MB
+Step 1/6 : FROM debian:bullseye-slim
+ ---> 6578cd967f7f
+Step 2/6 : ARG RELVER=bullseye-slim
+ ---> Using cache
+ ---> 719b27c9602e
+Step 3/6 : LABEL MAINTAINER="RadonDB" 	vendor="RadonDB" 	url="https://radondb.com" 	release="${RELVER}" 	org.opencontainers.image.vendor="RadonDB" 	os.version="bullseye"
+ ---> Using cache
+ ---> e6304db0fe77
+Step 4/6 : ENV TZ=Asia/Shanghai
+ ---> Using cache
+ ---> 8a4c27f55f7d
+Step 5/6 : RUN target=$(uname -m);rm /bin/sh && ln -s /bin/bash /bin/sh && ln -s /usr/lib/${target}-linux-gnu /usr/lib64
+ ---> Using cache
+ ---> e6f081a7074d
+Step 6/6 : RUN echo deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye main contrib non-free >/etc/apt/sources.list && 	echo deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-updates main contrib non-free >>/etc/apt/sources.list && 	echo deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-backports main contrib non-free >>/etc/apt/sources.list && 	echo deb http://mirrors.tuna.tsinghua.edu.cn/debian-security bullseye-security main contrib non-free >>/etc/apt/sources.list && 	apt-get -y update && 	apt-get -y install -y --no-install-recommends 	ca-certificates 	libnss-wrapper 	wget 	gettext 	gnupg 	dirmngr 	curl ;	groupmod -g 999 tape ;	echo deb [ signed-by=/usr/local/share/keyrings/postgres.gpg.asc ] http://mirrors.tuna.tsinghua.edu.cn/postgresql/repos/apt/ bullseye-pgdg main ${PGVERSION} >/etc/apt/sources.list.d/pgdg.list; 	key='B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8'; 	export GNUPGHOME="$(mktemp -d)"; 	mkdir -p /usr/local/share/keyrings/; 	gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key"; 	gpg --batch --export --armor "$key" > /usr/local/share/keyrings/postgres.gpg.asc; 	command -v gpgconf > /dev/null && gpgconf --kill all; 	rm -rf "$GNUPGHOME";	apt-get -y update ;	rm -rf /var/lib/apt/lists/*;
+ ---> Using cache
+ ---> fd6068144ce4
+[Warning] One or more build-args [DFSET DOCKERBASEREGISTRY PACKAGER PG_LBL BASEOS BASE_IMAGE_OS] were not consumed
+Successfully built fd6068144ce4
+Successfully tagged radondb/radondb-base:debian-11.16-2.1.1
+docker build \
+	-f /root/cdev/src/github.com/radondb/postgres-containters/11/bullseye/Dockerfile \
+	-t radondb/radondb-pg-base:debian-11.16-2.1.1 \
+	--build-arg PREFIX=radondb \
+	--build-arg BASEOS=debian \
+	--build-arg BASEVER=2.1.1 \
+	--build-arg PG_FULL=11.16 \
+	/root/cdev/src/github.com/radondb/postgres-containters
+Sending build context to Docker daemon  78.74MB
+Step 1/28 : ARG PREFIX
+Step 2/28 : ARG BASEOS
+Step 3/28 : ARG PG_FULL
+Step 4/28 : ARG BASEVER
+Step 5/28 : FROM ${PREFIX}/radondb-base:${BASEOS}-${PG_FULL}-${BASEVER}
+ ---> fd6068144ce4
+Step 6/28 : RUN set -ex; 	if ! command -v gpg > /dev/null; then 	apt-get update; 	apt-get install -y --no-install-recommends 	gnupg 	dirmngr 	; 	rm -rf /var/lib/apt/lists/*; 	fi
+ ---> Using cache
+ ---> 722c4315ab57
+Step 7/28 : RUN set -eux; 	groupadd -r postgres --gid=26; 	useradd -r -g postgres --uid=26 --home-dir=/var/lib/postgresql --shell=/bin/bash postgres; 	mkdir -p /var/lib/postgresql; 	chown -R postgres:postgres /var/lib/postgresql
+ ---> Using cache
+ ---> 30377426a816
+Step 8/28 : ENV GOSU_VERSION 1.14
+ ---> Using cache
+ ---> 77ea07d10a72
+Step 9/28 : RUN set -eux; 	savedAptMark="$(apt-mark showmanual)"; 	apt-get update; 	apt-get install -y --no-install-recommends ca-certificates wget; 	rm -rf /var/lib/apt/lists/*; 	dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; 	curl -L -o /usr/local/bin/gosu "https://ghproxy.com/https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch"; 	curl -L -o  /usr/local/bin/gosu.asc "https://ghproxy.com/https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; 	export GNUPGHOME="$(mktemp -d)"; 	gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; 	gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; 	gpgconf --kill all; 	rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; 	apt-mark auto '.*' > /dev/null; 	[ -z "$savedAptMark" ] || apt-mark manual $savedAptMark > /dev/null; 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; 	chmod +x /usr/local/bin/gosu; 	gosu --version; 	gosu nobody true
+ ---> Using cache
+ ---> 02b8046934cb
+Step 10/28 : RUN set -eux; 	if [ -f /etc/dpkg/dpkg.cfg.d/docker ]; then 	grep -q '/usr/share/locale' /etc/dpkg/dpkg.cfg.d/docker; 	sed -ri '/\/usr\/share\/locale/d' /etc/dpkg/dpkg.cfg.d/docker; 	! grep -q '/usr/share/locale' /etc/dpkg/dpkg.cfg.d/docker; 	fi; 	apt-get update; apt-get install -y --no-install-recommends locales; rm -rf /var/lib/apt/lists/*; 	localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+ ---> Using cache
+ ---> 910c09dd0667
+Step 11/28 : ENV LANG en_US.utf8
+ ---> Using cache
+ ---> d464b72efcd9
+Step 12/28 : RUN set -eux; 	apt-get update; 	apt-get install -y --no-install-recommends 	libnss-wrapper 	xz-utils 	zstd 	; 	rm -rf /var/lib/apt/lists/*
+ ---> Using cache
+ ---> cd09d5fb570c
+Step 13/28 : RUN mkdir /docker-entrypoint-initdb.d
+ ---> Using cache
+ ---> 5ad58993f9be
+Step 14/28 : RUN set -ex; 	key='B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8'; 	export GNUPGHOME="$(mktemp -d)"; 	mkdir -p /usr/local/share/keyrings/; 	gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key"; 	gpg --batch --export --armor "$key" > /usr/local/share/keyrings/postgres.gpg.asc; 	command -v gpgconf > /dev/null && gpgconf --kill all; 	rm -rf "$GNUPGHOME"
+ ---> Using cache
+ ---> 264f07faa01f
+Step 15/28 : ENV PG_MAJOR 11
+ ---> Using cache
+ ---> 9c3733a48729
+Step 16/28 : ENV PATH $PATH:/usr/lib/postgresql/$PG_MAJOR/bin
+ ---> Using cache
+ ---> c36e0bb219a1
+Step 17/28 : ENV PG_VERSION 11.16-1.pgdg110+1
+ ---> Using cache
+ ---> 3f6b627fb19e
+Step 18/28 : RUN set -ex; 		export PYTHONDONTWRITEBYTECODE=1; 		dpkgArch="$(dpkg --print-architecture)"; 	aptRepo="[ signed-by=/usr/local/share/keyrings/postgres.gpg.asc ] http://mirrors.tuna.tsinghua.edu.cn/postgresql/repos/apt/ bullseye-pgdg main $PG_MAJOR"; 	case "$dpkgArch" in 	amd64 | arm64 | ppc64el) 	echo "deb $aptRepo" > /etc/apt/sources.list.d/pgdg.list; 	apt-get update; 	;; 	*) 	echo "deb-src $aptRepo" > /etc/apt/sources.list.d/pgdg.list; 		savedAptMark="$(apt-mark showmanual)"; 		tempDir="$(mktemp -d)"; 	cd "$tempDir"; 		apt-get update; 	apt-get install -y --no-install-recommends dpkg-dev; 	echo "deb [ trusted=yes ] file://$tempDir ./" > /etc/apt/sources.list.d/temp.list; 	_update_repo() { 	dpkg-scanpackages . > Packages; 	apt-get -o Acquire::GzipIndexes=false update; 	}; 	_update_repo; 		nproc="$(nproc)"; 	export DEB_BUILD_OPTIONS="nocheck parallel=$nproc"; 	apt-get build-dep -y postgresql-common pgdg-keyring; 	apt-get source --compile postgresql-common pgdg-keyring; 	_update_repo; 	apt-get build-dep -y "postgresql-$PG_MAJOR=$PG_VERSION"; 	apt-get source --compile "postgresql-$PG_MAJOR=$PG_VERSION"; 			apt-mark showmanual | xargs apt-mark auto > /dev/null; 	apt-mark manual $savedAptMark; 		ls -lAFh; 	_update_repo; 	grep '^Package: ' Packages; 	cd /; 	;; 	esac; 		apt-get install -y --no-install-recommends postgresql-common; 	sed -ri 's/#(create_main_cluster) .*$/\1 = false/' /etc/postgresql-common/createcluster.conf; 	apt-get install -y --no-install-recommends 	"postgresql-$PG_MAJOR=$PG_VERSION" 	; 	ln -s /usr/lib/postgresql/$PG_MAJOR /usr/pgsql-$PG_MAJOR ;		rm -rf /var/lib/apt/lists/*; 		if [ -n "$tempDir" ]; then 	apt-get purge -y --auto-remove; 	rm -rf "$tempDir" /etc/apt/sources.list.d/temp.list; 	fi; 		find /usr -name '*.pyc' -type f -exec bash -c 'for pyc; do dpkg -S "$pyc" &> /dev/null || rm -vf "$pyc"; done' -- '{}' +; 		postgres --version
+ ---> Using cache
+ ---> af9838f57bb1
+Step 19/28 : RUN set -eux; 	dpkg-divert --add --rename --divert "/usr/share/postgresql/postgresql.conf.sample.dpkg" "/usr/share/postgresql/$PG_MAJOR/postgresql.conf.sample"; 	cp -v /usr/share/postgresql/postgresql.conf.sample.dpkg /usr/share/postgresql/postgresql.conf.sample; 	ln -sv ../postgresql.conf.sample "/usr/share/postgresql/$PG_MAJOR/"; 	sed -ri "s!^#?(listen_addresses)\s*=\s*\S+.*!\1 = '*'!" /usr/share/postgresql/postgresql.conf.sample; 	grep -F "listen_addresses = '*'" /usr/share/postgresql/postgresql.conf.sample
+ ---> Using cache
+ ---> 867e44f15ae6
+Step 20/28 : RUN mkdir -p /var/run/postgresql && chown -R postgres:postgres /var/run/postgresql && chmod 2777 /var/run/postgresql
+ ---> Using cache
+ ---> 07e1d9ca1622
+Step 21/28 : ENV PGDATA /var/lib/postgresql/data
+ ---> Using cache
+ ---> 361d0cbe85e5
+Step 22/28 : RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA"
+ ---> Using cache
+ ---> 1ed5a6cc420d
+Step 23/28 : VOLUME /var/lib/postgresql/data
+ ---> Using cache
+ ---> 8720abfa8e45
+Step 24/28 : COPY docker-entrypoint.sh /usr/local/bin/
+ ---> Using cache
+ ---> 2907bd235793
+Step 25/28 : ENTRYPOINT ["docker-entrypoint.sh"]
+ ---> Using cache
+ ---> 49ab5ddd88e3
+Step 26/28 : STOPSIGNAL SIGINT
+ ---> Using cache
+ ---> de51807a999d
+Step 27/28 : EXPOSE 5432
+ ---> Using cache
+ ---> 5a9ed0ac90d0
+Step 28/28 : CMD ["postgres"]
+ ---> Using cache
+ ---> 1069d68310e8
+Successfully built 1069d68310e8
+Successfully tagged radondb/radondb-pg-base:debian-11.16-2.1.1
+docker build \
+	-f /root/cdev/src/github.com/radondb/postgres-containters/build/postgres/Dockerfile \
+	-t radondb/radondb-postgres:debian-11.16-2.1.1 \
+	--build-arg BASEOS=debian \
+	--build-arg BASEVER=2.1.1 \
+	--build-arg PG_FULL=11.16 \
+	--build-arg PG_LBL=11 \
+	--build-arg PG_MAJOR=11 \
+	--build-arg PREFIX=radondb \
+	--build-arg BACKREST_VER=2.36 \
+	--build-arg DFSET=debian \
+	--build-arg PACKAGER=apt \
+	--build-arg BASE_IMAGE_NAME=radondb-base \
+	--build-arg PATRONI_VER=2.1.3 \
+	/root/cdev/src/github.com/radondb/postgres-containters
+Sending build context to Docker daemon  78.75MB
+Step 1/35 : ARG BASEOS
+Step 2/35 : ARG BASEVER
+Step 3/35 : ARG PG_FULL
+Step 4/35 : ARG PREFIX
+Step 5/35 : ARG DFSET
+Step 6/35 : ARG PACKAGER
+Step 7/35 : ARG PG_MAJOR
+Step 8/35 : ARG POSTGIS_LBL
+Step 9/35 : FROM ${PREFIX}/radondb-pg-base:${BASEOS}-${PG_FULL}-${BASEVER} AS extension_builder
+ ---> 1069d68310e8
+Step 10/35 : RUN apt-get -y update && 	apt-get -y install cmake libkrb5-dev ca-certificates wget curl build-essential libicu-dev postgresql-server-dev-${PG_MAJOR//.} -y --no-install-recommends && 	rm -rf /var/cache/apt/* /tmp/*
+ ---> Using cache
+ ---> f8e3eee2ed47
+Step 11/35 : RUN rm -rf /external_extensions && mkdir -p /external_extensions/pgnodemx && cd /external_extensions/pgnodemx;	set -eux;curl -SL https://github.com/crunchydata/pgnodemx/$(curl -s https://github.com/crunchydata/pgnodemx/releases | 	grep -m1 -Eo "archive/refs/tags/[^/]+\.tar\.gz") | tar --strip-components=1 -xzv -C /external_extensions/pgnodemx ; 	make USE_PGXS=1 && make USE_PGXS=1 install;
+ ---> Using cache
+ ---> 1aad3d84d14c
+Step 12/35 : RUN mkdir -p /external_extensions/timescaledb && cd /external_extensions/timescaledb;	if [ "${PG_MAJOR//.}" -gt "11" ]; then 	set -eux;curl -SL https://github.com/timescale/timescaledb/$(curl -s https://github.com/timescale/timescaledb/releases | 	grep -m1 -Eo "archive/refs/tags/[^/]+\.tar\.gz") | tar --strip-components=1 -xzv -C /external_extensions/timescaledb ;	elif [ "${PG_MAJOR//.}" -eq "11" ]; then 	curl -SL https://github.com/timescale/timescaledb/archive/refs/tags/2.3.0.tar.gz| tar --strip-components=1 -xzv -C /external_extensions/timescaledb ;	fi; 	./bootstrap -DREGRESS_CHECKS=OFF && cd build && make && make install ;
+ ---> Using cache
+ ---> 703ada6e8611
+Step 13/35 : FROM ${PREFIX}/radondb-pg-base:${BASEOS}-${PG_FULL}-${BASEVER}
+ ---> 1069d68310e8
+Step 14/35 : COPY --from=extension_builder /etc/apt/sources.list /etc/apt/sources.list
+ ---> Using cache
+ ---> 6d0bd9de9cac
+Step 15/35 : COPY --from=extension_builder /etc/apt/sources.list.d/pgdg.list /etc/apt/sources.list.d/pgdg.list
+ ---> Using cache
+ ---> da968daa0082
+Step 16/35 : COPY --from=extension_builder /usr/lib/postgresql/${PG_MAJOR}/lib /usr/lib/postgresql/${PG_MAJOR}/lib
+ ---> Using cache
+ ---> fd2255e48b09
+Step 17/35 : COPY --from=extension_builder /usr/share/postgresql/${PG_MAJOR}/extension /usr/share/postgresql/${PG_MAJOR}/extension
+ ---> Using cache
+ ---> 2355998579ac
+Step 18/35 : LABEL name="postgres" 	summary="PostgreSQL ${PG_FULL}" 	description="Allows multiple deployment methods for PostgreSQL, including basic single primary, streaming replication with synchronous and asynchronous replicas. Includes utilities and tools for Auditing (pgaudit), statement tracking,  Backup/Restore (pgbackrest, pg_basebackup, pgdump, pgrestore) and Benchmarking (pgbench)." 	io.k8s.description="RadonDB PostgreSQL is the trusted open source distribution of PostgreSQL" 	io.k8s.display-name="RadonDB PostgreSQL" 	io.openshift.tags="postgresql,postgres,sql,nosql,database,radondb" 	postgresql.version.major="${PG_MAJOR}" 	postgresql.version="${PG_FULL}"
+ ---> Using cache
+ ---> 8b7f645316a7
+Step 19/35 : USER 0
+ ---> Using cache
+ ---> 42471367daed
+Step 20/35 : ENV DEBIAN_FRONTEND noninteractive
+ ---> Using cache
+ ---> e04f3c0ad856
+Step 21/35 : RUN apt-get update ;apt-get install -y --no-install-recommends 	postgresql-${PG_MAJOR//.}-pgrouting 	openssh-server 	postgresql-${PG_MAJOR//.}-pgaudit 	postgresql-${PG_MAJOR//.}-partman 	postgresql-${PG_MAJOR//.}-cron 	pgbackrest 	psmisc 	postgresql-${PG_MAJOR//.}-wal2json 	curl 	file 	gettext 	hostname 	procps 	unzip 	bzip2 	lz4 	krb5-user 	patroni 	postgresql-${PG_MAJOR//.}-postgis-3 	postgresql-plperl-${PG_MAJOR//.} 	postgresql-${PG_MAJOR//.}-plr 	postgresql-pltcl-${PG_MAJOR//.} ;	sed -i 's/^/#/g' /etc/pgbackrest.conf ;	rm -rf /var/cache/apt/*
+ ---> Using cache
+ ---> 6c2c0de4ea64
+Step 22/35 : RUN mkdir -p /opt/radondb/bin /opt/radondb/conf /pgdata /pgwal /pgconf /recover /backrestrepo /var/lib/pgsql
+ ---> Using cache
+ ---> 71005d2b4ad4
+Step 23/35 : RUN chown -R postgres:postgres /opt/radondb /var/lib/pgsql 		/pgdata /pgwal /pgconf /recover /backrestrepo &&  	chmod -R g=u /opt/radondb /var/lib/pgsql 		/pgdata /pgwal /pgconf /recover /backrestrepo
+ ---> Using cache
+ ---> 0ea3a7e8caa8
+Step 24/35 : EXPOSE 5432
+ ---> Using cache
+ ---> 54c419da04a7
+Step 25/35 : ADD bin/postgres_common /opt/radondb/bin
+ ---> Using cache
+ ---> 360e400c0d6a
+Step 26/35 : ADD bin/common /opt/radondb/bin
+ ---> Using cache
+ ---> 690b861465f3
+Step 27/35 : ADD conf/postgres_common /opt/radondb/conf
+ ---> Using cache
+ ---> d838ff821e13
+Step 28/35 : ADD tools/pgmonitor/postgres_exporter/common /opt/radondb/bin/modules/pgexporter
+ ---> Using cache
+ ---> 7af0b59b50af
+Step 29/35 : ADD tools/pgmonitor/postgres_exporter/linux /opt/radondb/bin/modules/pgexporter
+ ---> Using cache
+ ---> 2af95d2f8f5a
+Step 30/35 : RUN mkdir /.ssh && chown 26:0 /.ssh && chmod g+rwx /.ssh && rm -f /run/nologin
+ ---> Using cache
+ ---> e81970e36e89
+Step 31/35 : VOLUME ["/sshd", "/pgconf", "/pgdata", "/pgwal", "/recover", "/backrestrepo"]
+ ---> Using cache
+ ---> 58ed7775c5ef
+Step 32/35 : ENV NSS_WRAPPER_SUBDIR="postgres"
+ ---> Using cache
+ ---> 9efa98cf3e2a
+Step 33/35 : ENTRYPOINT ["/opt/radondb/bin/uid_postgres.sh"]
+ ---> Using cache
+ ---> 6009daa9ae5e
+Step 34/35 : USER 26
+ ---> Using cache
+ ---> 0a28425df49d
+Step 35/35 : CMD ["/opt/radondb/bin/start.sh"]
+ ---> Using cache
+ ---> 08a6a21c65c5
+[Warning] One or more build-args [BASE_IMAGE_NAME PATRONI_VER BACKREST_VER PG_LBL] were not consumed
+Successfully built 08a6a21c65c5
+Successfully tagged radondb/radondb-postgres:debian-11.16-2.1.1
+docker build \
+	-f /root/cdev/src/github.com/radondb/postgres-containters/build/postgres-ha/Dockerfile \
+	-t radondb/radondb-postgres-ha:debian-11.16-2.1.1 \
+	--build-arg BASEOS=debian \
+	--build-arg BASEVER=2.1.1 \
+	--build-arg PG_FULL=11.16 \
+	--build-arg PG_MAJOR=11 \
+	--build-arg PREFIX=radondb \
+	--build-arg PATRONI_VER=2.1.3 \
+	--build-arg DFSET=debian \
+	--build-arg PACKAGER=apt \
+	/root/cdev/src/github.com/radondb/postgres-containters
+Sending build context to Docker daemon  78.76MB
+Step 1/26 : ARG BASEOS
+Step 2/26 : ARG BASEVER
+Step 3/26 : ARG PG_FULL
+Step 4/26 : ARG PREFIX
+Step 5/26 : FROM ${PREFIX}/radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER}
+ ---> 08a6a21c65c5
+Step 6/26 : USER 0
+ ---> Using cache
+ ---> 477688b4be7e
+Step 7/26 : ARG BASEOS
+ ---> Using cache
+ ---> 9144a36e5ab9
+Step 8/26 : ARG PG_FULL
+ ---> Using cache
+ ---> 083a49c0005e
+Step 9/26 : ARG DFSET
+ ---> Using cache
+ ---> 8dd350501739
+Step 10/26 : ARG PACKAGER
+ ---> Using cache
+ ---> f4ca571d31b8
+Step 11/26 : ARG PG_MAJOR
+ ---> Using cache
+ ---> b6ecf475f70e
+Step 12/26 : ENV PGROOT="/usr/pgsql-${PG_MAJOR}" PGVERSION="${PG_MAJOR}"
+ ---> Using cache
+ ---> 5603fc931979
+Step 13/26 : ARG PATRONI_VER
+ ---> Using cache
+ ---> f2937f67f156
+Step 14/26 : LABEL name="postgres-ha" 	summary="PostgreSQL ${PG_FULL} with Patroni" 	description="Used for the deployment and management of highly-available PostgreSQL clusters using Patroni." 	io.k8s.description="RadonDB PostgreSQL optimized for high-availability (HA)" 	io.k8s.display-name="RadonDB PostgreSQL - HA Optimized" 	io.openshift.tags="postgresql,postgres,postgis,sql,nosql,database,ha,radondb"
+ ---> Using cache
+ ---> bcb100e4ae3d
+Step 15/26 : ENV PATH="${PGROOT}/bin:${PATH}"
+ ---> Using cache
+ ---> cfc813430a70
+Step 16/26 : RUN mkdir -p /tablespaces
+ ---> Using cache
+ ---> dd9801d17602
+Step 17/26 : RUN chown -R postgres:postgres /tablespaces && 	chmod -R g=u /tablespaces
+ ---> Using cache
+ ---> e4da9731be87
+Step 18/26 : EXPOSE 5432
+ ---> Using cache
+ ---> 9cf59a6b0fa9
+Step 19/26 : ADD bin/postgres-ha /opt/radondb/bin/postgres-ha
+ ---> Using cache
+ ---> 5f1ec1ce847e
+Step 20/26 : ADD conf/postgres-ha /opt/radondb/conf/postgres-ha
+ ---> Using cache
+ ---> fb8dabe2788e
+Step 21/26 : ADD yq /opt/radondb/bin
+ ---> Using cache
+ ---> 4c6bcc8f2b85
+Step 22/26 : RUN chmod +x /opt/radondb/bin/yq
+ ---> Using cache
+ ---> 89d069303cce
+Step 23/26 : VOLUME ["/pgdata", "/pgwal", "/pgconf", "/backrestrepo", "/sshd"]
+ ---> Using cache
+ ---> 2a1c2b29bbcc
+Step 24/26 : ENTRYPOINT ["/opt/radondb/bin/postgres-ha/bootstrap-postgres-ha.sh"]
+ ---> Using cache
+ ---> 667ce4f46dce
+Step 25/26 : USER 26
+ ---> Using cache
+ ---> fb845ebbdde1
+Step 26/26 : CMD ["/usr/bin/patroni"]
+ ---> Using cache
+ ---> dad779907a61
+Successfully built dad779907a61
+Successfully tagged radondb/radondb-postgres-ha:debian-11.16-2.1.1
+docker build \
+	-f /root/cdev/src/github.com/radondb/postgres-containters/build/postgres-gis/Dockerfile \
+	-t radondb/radondb-postgres-gis:debian-11.16-3.1-2.1.1 \
+	--build-arg BASEOS=debian \
+	--build-arg BASEVER=2.1.1 \
+	--build-arg PG_FULL=11.16 \
+	--build-arg PG_MAJOR=11 \
+	--build-arg PREFIX=radondb \
+	--build-arg POSTGIS_LBL=31 \
+	--build-arg DFSET=debian \
+	--build-arg PACKAGER=apt \
+	/root/cdev/src/github.com/radondb/postgres-containters
+Sending build context to Docker daemon  78.76MB
+Step 1/19 : ARG BASEOS
+Step 2/19 : ARG BASEVER
+Step 3/19 : ARG PG_FULL
+Step 4/19 : ARG PREFIX
+Step 5/19 : ARG DFSET
+Step 6/19 : ARG PACKAGER
+Step 7/19 : ARG PG_MAJOR
+Step 8/19 : ARG POSTGIS_LBL
+Step 9/19 : FROM ${PREFIX}/radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER} AS extension_builder
+ ---> 08a6a21c65c5
+Step 10/19 : LABEL name="postgres-gis" 	summary="Includes PostGIS extensions on top of radondb-postgres" 	description="An identical image of radondb-postgres with the extra PostGIS packages added for users that require PostGIS." 	io.k8s.description="postgres-gis container" 	io.k8s.display-name="RadonDB PostGIS" 	io.openshift.tags="postgresql,postgres,postgis,spatial,geospatial,gis,map,database,ha,radondb"
+ ---> Using cache
+ ---> 7ec1f74b34ed
+Step 11/19 : USER 0
+ ---> Using cache
+ ---> 7584fd6f4f8d
+Step 12/19 : ENV DEBIAN_FRONTEND noninteractive
+ ---> Using cache
+ ---> 3eec933d2557
+Step 13/19 : RUN apt-get update ;apt-get install -y --no-install-recommends 	postgresql-${PG_MAJOR//.}-pgrouting 	openssh-server 	postgresql-${PG_MAJOR//.}-pgaudit 	postgresql-${PG_MAJOR//.}-partman 	postgresql-${PG_MAJOR//.}-cron 	pgbackrest 	psmisc 	postgresql-${PG_MAJOR//.}-wal2json 	curl 	file 	gettext 	hostname 	procps 	unzip 	bzip2 	lz4 	krb5-user 	patroni 	postgresql-${PG_MAJOR//.}-postgis-3 	postgresql-plperl-${PG_MAJOR//.} 	postgresql-pltcl-${PG_MAJOR//.} ;	sed -i 's/^/#/g' /etc/pgbackrest.conf ;	rm -rf /var/cache/apt/*
+ ---> Using cache
+ ---> 013730f10a80
+Step 14/19 : EXPOSE 5432
+ ---> Using cache
+ ---> 5db218fd8c20
+Step 15/19 : EXPOSE 5432
+ ---> Using cache
+ ---> 99b83c49314f
+Step 16/19 : ADD bin/postgres-gis /opt/radondb/bin/postgres
+ ---> Using cache
+ ---> 459600dacc3f
+Step 17/19 : ENTRYPOINT ["/opt/radondb/bin/uid_postgres.sh"]
+ ---> Using cache
+ ---> 47c7c0f22c0b
+Step 18/19 : USER 26
+ ---> Using cache
+ ---> 53e34fd4761c
+Step 19/19 : CMD ["/opt/radondb/bin/start.sh"]
+ ---> Using cache
+ ---> ecc8bff9b7b6
+Successfully built ecc8bff9b7b6
+Successfully tagged radondb/radondb-postgres-gis:debian-11.16-3.1-2.1.1
+docker build \
+	-f /root/cdev/src/github.com/radondb/postgres-containters/build/postgres-gis-ha/Dockerfile \
+	-t radondb/radondb-postgres-gis-ha:debian-11.16-3.1-2.1.1 \
+	--build-arg BASEOS=debian \
+	--build-arg BASEVER=2.1.1 \
+	--build-arg PG_FULL=11.16 \
+	--build-arg PG_MAJOR=11 \
+	--build-arg PATRONI_VER=2.1.3 \
+	--build-arg POSTGIS_VER=3.1 \
+	--build-arg PREFIX=radondb \
+	--build-arg DFSET=debian \
+	--build-arg PACKAGER=apt \
+	/root/cdev/src/github.com/radondb/postgres-containters
+Sending build context to Docker daemon  78.76MB
+Step 1/28 : ARG BASEOS
+Step 2/28 : ARG BASEVER
+Step 3/28 : ARG PG_FULL
+Step 4/28 : ARG PREFIX
+Step 5/28 : ARG POSTGIS_VER
+Step 6/28 : FROM ${PREFIX}/radondb-postgres-gis:${BASEOS}-${PG_FULL}-${POSTGIS_VER}-${BASEVER}
+ ---> ecc8bff9b7b6
+Step 7/28 : USER 0
+ ---> Using cache
+ ---> 93177c03acd9
+Step 8/28 : ARG BASEOS
+ ---> Using cache
+ ---> 2547179d2741
+Step 9/28 : ARG PG_FULL
+ ---> Using cache
+ ---> f020e379e7fd
+Step 10/28 : ARG DFSET
+ ---> Using cache
+ ---> 45b04c3fc1ca
+Step 11/28 : ARG PACKAGER
+ ---> Using cache
+ ---> 34951a9e610a
+Step 12/28 : ARG PG_MAJOR
+ ---> Using cache
+ ---> 4e884eeaf57d
+Step 13/28 : ENV PGROOT="/usr/pgsql-${PG_MAJOR}" PGVERSION="${PG_MAJOR}"
+ ---> Using cache
+ ---> 4ddfb5c66197
+Step 14/28 : ARG PATRONI_VER
+ ---> Using cache
+ ---> 4cd7e4e8bdd5
+Step 15/28 : LABEL name="postgres-gis-ha" 	summary="Includes PostGIS extensions on top of radondb-postgres-ha" 	description="An identical image of radondb-postgres with the extra PostGIS packages added for users that require PostGIS, optimized for high-availability." 	io.k8s.description="PostGIS enabled PostgreSQL container" 	io.k8s.display-name="RadonDB PostGIS HA" 	io.openshift.tags="postgresql,postgres,postgis,spatial,geospatial,gis,map,database,ha,radondb"
+ ---> Using cache
+ ---> 46b21a5acb1a
+Step 16/28 : ENV PATH="${PGROOT}/bin:${PATH}"
+ ---> Using cache
+ ---> 89edab164aa4
+Step 17/28 : RUN mkdir -p /tablespaces
+ ---> Using cache
+ ---> a2e8273ce251
+Step 18/28 : RUN chown -R postgres:postgres /tablespaces && 	chmod -R g=u /tablespaces
+ ---> Using cache
+ ---> b67da3a26965
+Step 19/28 : EXPOSE 5432
+ ---> Using cache
+ ---> 147286d7abad
+Step 20/28 : ADD bin/postgres-ha /opt/radondb/bin/postgres-ha
+ ---> Using cache
+ ---> d46aa631e251
+Step 21/28 : ADD bin/postgres-gis-ha /opt/radondb/bin/postgres-ha
+ ---> Using cache
+ ---> bfd72d5aee1a
+Step 22/28 : ADD conf/postgres-ha /opt/radondb/conf/postgres-ha
+ ---> Using cache
+ ---> 975cd13af518
+Step 23/28 : ADD yq /opt/radondb/bin
+ ---> Using cache
+ ---> ff7a67d71e2c
+Step 24/28 : RUN chmod +x /opt/radondb/bin/yq
+ ---> Using cache
+ ---> ca6ab537b342
+Step 25/28 : VOLUME ["/pgdata", "/pgwal", "/pgconf", "/backrestrepo", "/sshd"]
+ ---> Using cache
+ ---> b1cc8f53e1c0
+Step 26/28 : ENTRYPOINT ["/opt/radondb/bin/postgres-ha/bootstrap-postgres-ha.sh"]
+ ---> Using cache
+ ---> 26d049f3b765
+Step 27/28 : USER 26
+ ---> Using cache
+ ---> 156dd4c3fffb
+Step 28/28 : CMD ["/usr/bin/patroni"]
+ ---> Using cache
+ ---> e978f10a390c
+Successfully built e978f10a390c
+Successfully tagged radondb/radondb-postgres-gis-ha:debian-11.16-3.1-2.1.1
+grep: 11: Is a directory
+grep: 12: Is a directory
+grep: 13: Is a directory
+grep: 14: Is a directory
+docker build \
+	-f /root/cdev/src/github.com/radondb/postgres-containters/build/upgrade/Dockerfile \
+	-t radondb/radondb-upgrade:debian-11.16-2.1.1 \
+	--build-arg BASEOS=debian \
+	--build-arg BASEVER=2.1.1 \
+	--build-arg PG_FULL=11.16 \
+	--build-arg PG_MAJOR=11 \
+	--build-arg PREFIX=radondb \
+	--build-arg DFSET=debian \
+	--build-arg PACKAGER=apt \
+	--build-arg UPGRADE_PG_VERSIONS="" \
+	/root/cdev/src/github.com/radondb/postgres-containters
+Sending build context to Docker daemon  78.77MB
+Step 1/31 : ARG BASEOS
+Step 2/31 : ARG BASEVER
+Step 3/31 : ARG PG_FULL
+Step 4/31 : ARG PREFIX
+Step 5/31 : ARG BASE_IMAGE_OS
+Step 6/31 : ARG DFSET
+Step 7/31 : ARG PACKAGER
+Step 8/31 : ARG PG_MAJOR
+Step 9/31 : ARG UPGRADE_PG_VERSIONS
+Step 10/31 : FROM ${PREFIX}/radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER} AS extension_builder
+ ---> 08a6a21c65c5
+Step 11/31 : USER 0
+ ---> Using cache
+ ---> 477688b4be7e
+Step 12/31 : RUN apt-get -y update && 	apt-get -y install cmake libkrb5-dev ca-certificates wget curl build-essential libicu-dev postgresql-server-dev-${PG_MAJOR//.} -y --no-install-recommends && 	rm -rf /var/cache/apt/* /tmp/*
+ ---> Using cache
+ ---> 4c6b0ac23928
+Step 13/31 : RUN rm -rf /external_extensions && mkdir -p /external_extensions/pgnodemx && cd /external_extensions/pgnodemx;	set -eux;curl -SL https://github.com/crunchydata/pgnodemx/$(curl -s https://github.com/crunchydata/pgnodemx/releases | 	grep -m1 -Eo "archive/refs/tags/[^/]+\.tar\.gz") | tar --strip-components=1 -xzv -C /external_extensions/pgnodemx ; 	make USE_PGXS=1 && make USE_PGXS=1 install;
+ ---> Using cache
+ ---> 0978312e8438
+Step 14/31 : FROM ${PREFIX}/radondb-postgres:${BASEOS}-${PG_FULL}-${BASEVER}
+ ---> 08a6a21c65c5
+Step 15/31 : USER 0
+ ---> Using cache
+ ---> 477688b4be7e
+Step 16/31 : LABEL name="upgrade" 	summary="Provides a pg_upgrade capability that performs a major PostgreSQL upgrade." 	description="Provides a means to perform a major PostgreSQL upgrade from an earlier version to PostgreSQL ${PG_MAJOR}." 	io.k8s.description="postgres upgrade container" 	io.k8s.display-name="RadonDB PostgreSQL upgrade container" 	io.openshift.tags="postgresql,postgres,upgrade,database,radondb"
+ ---> Using cache
+ ---> 71fe3885fc23
+Step 17/31 : COPY --from=extension_builder /etc/apt/sources.list /etc/apt/sources.list
+ ---> Using cache
+ ---> dad303e6c0b7
+Step 18/31 : COPY --from=extension_builder /etc/apt/sources.list.d/pgdg.list /etc/apt/sources.list.d/pgdg.list
+ ---> Using cache
+ ---> a35bf9b83f86
+Step 19/31 : COPY --from=extension_builder /usr/lib/postgresql/${PG_MAJOR}/lib /usr/lib/postgresql/${PG_MAJOR}/lib
+ ---> Using cache
+ ---> e293ed0987e0
+Step 20/31 : COPY --from=extension_builder /usr/share/postgresql/${PG_MAJOR}/extension /usr/share/postgresql/${PG_MAJOR}/extension
+ ---> Using cache
+ ---> f63dc8ce5600
+Step 21/31 : RUN apt-get update ;for pg_version in $UPGRADE_PG_VERSIONS; do 	apt-get install -y --no-install-recommends 	postgresql-${pg_version} 	postgresql-${pg_version}-postgis-3 	postgresql-${pg_version}-pgaudit ;	done && rm -rf /var/cache/apt/* ;
+ ---> Using cache
+ ---> 8b3669ad65be
+Step 22/31 : RUN mkdir -p /opt/radondb/bin /pgolddata /pgnewdata /opt/radondb/conf
+ ---> Using cache
+ ---> 30c9184d18c9
+Step 23/31 : ADD bin/upgrade/ /opt/radondb/bin
+ ---> Using cache
+ ---> eabccef0a6f4
+Step 24/31 : ADD bin/common /opt/radondb/bin
+ ---> Using cache
+ ---> 0864dcf870e9
+Step 25/31 : ADD conf/upgrade/ /opt/radondb/conf
+ ---> Using cache
+ ---> 1591e627a6f2
+Step 26/31 : RUN chown -R postgres:postgres /opt/radondb /pgolddata /pgnewdata && 	chmod -R g=u /opt/radondb /pgolddata /pgnewdata
+ ---> Using cache
+ ---> 34e8980c2cf5
+Step 27/31 : VOLUME /pgolddata /pgnewdata
+ ---> Using cache
+ ---> a318c7aa26bb
+Step 28/31 : ENV NSS_WRAPPER_SUBDIR="upgrade"
+ ---> Using cache
+ ---> 65c5ffbe0731
+Step 29/31 : ENTRYPOINT ["opt/radondb/bin/uid_postgres.sh"]
+ ---> Using cache
+ ---> 1f30b81a484d
+Step 30/31 : USER 26
+ ---> Using cache
+ ---> def89aaff48e
+Step 31/31 : CMD ["/opt/radondb/bin/start.sh"]
+ ---> Using cache
+ ---> 3d5138e10a61
+Successfully built 3d5138e10a61
+Successfully tagged radondb/radondb-upgrade:debian-11.16-2.1.1
+docker build \
+	-f /root/cdev/src/github.com/radondb/postgres-containters/build/pgbadger/Dockerfile \
+	-t radondb/radondb-pgbadger:debian-11.16-2.1.1 \
+	--build-arg BASEOS=debian \
+	--build-arg BASEVER=2.1.1 \
+	--build-arg PG_FULL=11.16 \
+	--build-arg PG_MAJOR=11 \
+	--build-arg PREFIX=radondb \
+	--build-arg DFSET=debian \
+	--build-arg BASE_IMAGE_OS=bullseye-slim \
+	--build-arg PACKAGER=apt \
+	/root/cdev/src/github.com/radondb/postgres-containters
+Sending build context to Docker daemon  78.77MB
+Step 1/29 : ARG BASEOS
+Step 2/29 : ARG BASEVER
+Step 3/29 : ARG PG_FULL
+Step 4/29 : ARG PREFIX
+Step 5/29 : ARG BASE_IMAGE_OS
+Step 6/29 : FROM golang:1.15.5 as badgerserver-build
+ ---> 6d8772fbd285
+Step 7/29 : WORKDIR /
+ ---> Using cache
+ ---> 4c15cfad4c03
+Step 8/29 : ADD badger badger
+ ---> Using cache
+ ---> 0f42d2434679
+Step 9/29 : RUN CGO_ENABLED=0 GOOS=linux go build -a -o badgerserver ./badger
+ ---> Using cache
+ ---> a912a5206b5e
+Step 10/29 : FROM ${PREFIX}/radondb-base:${BASEOS}-${PG_FULL}-${BASEVER}
+ ---> fd6068144ce4
+Step 11/29 : ARG DFSET
+ ---> Using cache
+ ---> 4631ad6d0dfb
+Step 12/29 : ARG PACKAGER
+ ---> Using cache
+ ---> 7d96dab93c52
+Step 13/29 : ARG PG_MAJOR
+ ---> Using cache
+ ---> e9f455f3d8bd
+Step 14/29 : LABEL name="pgbadger" 	summary="HTTP wrapper around the PGBadger PostgreSQL utility" 	description="Has an HTTP REST interface. You GET http://host:10000/api/badgergenerate, and it will generate a pgbadger report on a database container's log files." 	io.k8s.description="pgBadger" 	io.k8s.display-name="pgBadger" 	io.openshift.tags="postgresql,postgres,monitoring,pgbadger,database,radondb"
+ ---> Using cache
+ ---> 39196ceb2e21
+Step 15/29 : ENV PGVERSION="${PGMAJOR}"
+ ---> Using cache
+ ---> e3f1c08f548e
+Step 16/29 : RUN groupadd -g 26 postgres && useradd -g 26 -u 26 postgres
+ ---> Using cache
+ ---> ce22bbe36813
+Step 17/29 : RUN apt-get update ;apt-get install -y --no-install-recommends 	pgbadger ;	rm -rf /var/cache/apt/*
+ ---> Using cache
+ ---> fe0d61771dea
+Step 18/29 : RUN mkdir -p /opt/radondb/bin /opt/radondb/conf /report
+ ---> Using cache
+ ---> add564b9b6db
+Step 19/29 : COPY --from=badgerserver-build 	/badgerserver 	/opt/radondb/bin
+ ---> Using cache
+ ---> 30c569161498
+Step 20/29 : ADD conf/pgbadger /opt/radondb/conf
+ ---> Using cache
+ ---> fe77d62bd10b
+Step 21/29 : ADD bin/common /opt/radondb/bin
+ ---> Using cache
+ ---> 0e150f7aa9bc
+Step 22/29 : ADD bin/pgbadger /opt/radondb/bin
+ ---> Using cache
+ ---> 27ce8d5998f9
+Step 23/29 : RUN chown -R postgres:postgres /opt/radondb /report /bin && 	chmod -R g=u /opt/radondb /report /bin
+ ---> Using cache
+ ---> 93a8017a2646
+Step 24/29 : EXPOSE 10000
+ ---> Using cache
+ ---> 818216f2a7c2
+Step 25/29 : VOLUME ["/pgdata", "/report"]
+ ---> Using cache
+ ---> 45eaf3f50001
+Step 26/29 : ENV NSS_WRAPPER_SUBDIR="pgbadger"
+ ---> Using cache
+ ---> bcdf0856b82d
+Step 27/29 : ENTRYPOINT ["opt/radondb/bin/uid_postgres.sh"]
+ ---> Using cache
+ ---> 19b2799f966f
+Step 28/29 : USER 26
+ ---> Using cache
+ ---> 81de2ea2d701
+Step 29/29 : CMD ["/opt/radondb/bin/start-pgbadger.sh"]
+ ---> Using cache
+ ---> 7dfee4ea49df
+Successfully built 7dfee4ea49df
+Successfully tagged radondb/radondb-pgbadger:debian-11.16-2.1.1
+docker build \
+	-f /root/cdev/src/github.com/radondb/postgres-containters/build/pgbouncer/Dockerfile \
+	-t radondb/radondb-pgbouncer:debian-11.16-2.1.1 \
+	--build-arg BASEOS=debian \
+	--build-arg BASEVER=2.1.1 \
+	--build-arg PG_FULL=11.16 \
+	--build-arg PG_MAJOR=11 \
+	--build-arg PREFIX=radondb \
+	--build-arg DFSET=debian \
+	--build-arg BASE_IMAGE_OS=bullseye-slim \
+	--build-arg PACKAGER=apt \
+	/root/cdev/src/github.com/radondb/postgres-containters
+Sending build context to Docker daemon  78.77MB
+Step 1/23 : ARG BASEOS
+Step 2/23 : ARG BASEVER
+Step 3/23 : ARG PG_FULL
+Step 4/23 : ARG BASE_IMAGE_OS
+Step 5/23 : ARG PREFIX
+Step 6/23 : FROM ${PREFIX}/radondb-base:${BASEOS}-${PG_FULL}-${BASEVER}
+ ---> fd6068144ce4
+Step 7/23 : ARG DFSET
+ ---> Using cache
+ ---> 4631ad6d0dfb
+Step 8/23 : ARG PACKAGER
+ ---> Using cache
+ ---> 7d96dab93c52
+Step 9/23 : ARG PG_MAJOR
+ ---> Using cache
+ ---> e9f455f3d8bd
+Step 10/23 : LABEL name="pgbouncer" 	summary="Lightweight connection pooler for radondb-postgres" 	description="The aim of radondb-pgbouncer is to lower the performance impact of opening new connections to PostgreSQL; clients connect through this service. It offers session, transaction and statement pooling." 	io.k8s.description="pgBouncer" 	io.k8s.display-name="pgBouncer" 	io.openshift.tags="postgresql,postgres,pooling,pgbouncer,database,radondb"
+ ---> Using cache
+ ---> 76d33e4dd794
+Step 11/23 : RUN apt-get update ;apt-get install -y --no-install-recommends 	pgbouncer ;	rm -rf /var/cache/apt/*
+ ---> Using cache
+ ---> 014b88b93cb8
+Step 12/23 : ENV PGVERSION="${PG_MAJOR}"
+ ---> Using cache
+ ---> 1927bd41c163
+Step 13/23 : RUN mkdir -p /opt/radondb/bin /opt/radondb/conf /pgconf
+ ---> Using cache
+ ---> a4245e5d4e92
+Step 14/23 : ADD bin/pgbouncer /opt/radondb/bin
+ ---> Using cache
+ ---> 6cada456cc4a
+Step 15/23 : ADD bin/common /opt/radondb/bin
+ ---> Using cache
+ ---> d13cdc13f155
+Step 16/23 : ADD conf/pgbouncer /opt/radondb/conf
+ ---> Using cache
+ ---> a9249abc1e4f
+Step 17/23 : RUN chown -R 2:0 /opt/radondb /pgconf && 	chmod -R g=u /opt/radondb /pgconf
+ ---> Using cache
+ ---> 87ccc3d89abb
+Step 18/23 : EXPOSE 6432
+ ---> Using cache
+ ---> 8cbb2c99fd88
+Step 19/23 : VOLUME ["/pgconf"]
+ ---> Using cache
+ ---> 86e0c80b2749
+Step 20/23 : ENV NSS_WRAPPER_SUBDIR="pgbouncer"
+ ---> Using cache
+ ---> 2590d7a8ed3c
+Step 21/23 : ENTRYPOINT ["opt/radondb/bin/uid_daemon.sh"]
+ ---> Using cache
+ ---> 9e1c8029f502
+Step 22/23 : USER 2
+ ---> Using cache
+ ---> 78037f90c7f1
+Step 23/23 : CMD ["/opt/radondb/bin/start.sh"]
+ ---> Using cache
+ ---> d642f55e0907
+Successfully built d642f55e0907
+Successfully tagged radondb/radondb-pgbouncer:debian-11.16-2.1.1
+docker build \
+	-f /root/cdev/src/github.com/radondb/postgres-containters/build/pgpool/Dockerfile \
+	-t radondb/radondb-pgpool:debian-11.16-2.1.1 \
+	--build-arg BASEOS=debian \
+	--build-arg BASEVER=2.1.1 \
+	--build-arg PG_FULL=11.16 \
+	--build-arg PG_MAJOR=11 \
+	--build-arg PREFIX=radondb \
+	--build-arg DFSET=debian \
+	--build-arg BASE_IMAGE_OS=bullseye-slim \
+	--build-arg PACKAGER=apt \
+	/root/cdev/src/github.com/radondb/postgres-containters
+Sending build context to Docker daemon  78.78MB
+Step 1/24 : ARG BASEOS
+Step 2/24 : ARG BASEVER
+Step 3/24 : ARG PG_FULL
+Step 4/24 : ARG PREFIX
+Step 5/24 : FROM ${PREFIX}/radondb-base:${BASEOS}-${PG_FULL}-${BASEVER}
+ ---> fd6068144ce4
+Step 6/24 : ARG DFSET
+ ---> Using cache
+ ---> 4631ad6d0dfb
+Step 7/24 : ARG PACKAGER
+ ---> Using cache
+ ---> 7d96dab93c52
+Step 8/24 : ARG BASEOS
+ ---> Using cache
+ ---> aa4d10cd87a7
+Step 9/24 : ARG PG_MAJOR
+ ---> Using cache
+ ---> 6da38cf06edf
+Step 10/24 : LABEL name="pgpool" 	summary="Contains the pgpool utility as a PostgreSQL-aware load balancer" 	description="Offers a smart load balancer in front of a Postgres cluster, sending writes only to the primary and reads to the replica(s). This allows an application to only have a single connection point when interacting with a Postgres cluster." 	io.k8s.description="pgpool II" 	io.k8s.display-name="pgpool II" 	io.openshift.tags="postgresql,postgres,pgpool,database,radondb"
+ ---> Using cache
+ ---> 6f1b3aadef98
+Step 11/24 : RUN apt-get -y update && 	apt-get -y install 	pgpool2 		postgresql-${PG_MAJOR//.}-pgpool2; 	rm -rf /var/cache/apt/* /tmp/*
+ ---> Using cache
+ ---> 14c42d30bebe
+Step 12/24 : ENV PGVERSION="${PG_MAJOR}"
+ ---> Using cache
+ ---> 80e046aeb97f
+Step 13/24 : RUN mkdir -p /opt/radondb/bin /opt/radondb/conf
+ ---> Using cache
+ ---> b70b127ffc9f
+Step 14/24 : ADD bin/pgpool /opt/radondb/bin
+ ---> Using cache
+ ---> 08d0f9fca2bf
+Step 15/24 : ADD bin/common /opt/radondb/bin
+ ---> Using cache
+ ---> fe688fecc157
+Step 16/24 : ADD conf/pgpool /opt/radondb/conf
+ ---> Using cache
+ ---> 929545a159d2
+Step 17/24 : RUN ln -sf /opt/radondb/conf/pool_hba.conf /etc/pgpool2/pool_hba.conf 	&& ln -sf /opt/radondb/conf/pgpool/pool_passwd /etc/pgpool2/pool_passwd
+ ---> Using cache
+ ---> 48ed303a49f4
+Step 18/24 : RUN chgrp -R 0 /opt/radondb && 	chmod -R g=u /opt/radondb
+ ---> Using cache
+ ---> 4e780374eb9a
+Step 19/24 : EXPOSE 5432
+ ---> Using cache
+ ---> 796816d26469
+Step 20/24 : VOLUME ["/pgconf"]
+ ---> Using cache
+ ---> 8ed5f09a21ca
+Step 21/24 : ENV NSS_WRAPPER_SUBDIR="pgpool"
+ ---> Using cache
+ ---> 5f78f0455e51
+Step 22/24 : ENTRYPOINT ["opt/radondb/bin/uid_daemon.sh"]
+ ---> Using cache
+ ---> 23d067f3dfd6
+Step 23/24 : USER 2
+ ---> Using cache
+ ---> 46055cb1b7fc
+Step 24/24 : CMD ["/opt/radondb/bin/startpgpool.sh"]
+ ---> Using cache
+ ---> 27fbf28f6ca9
+[Warning] One or more build-args [BASE_IMAGE_OS] were not consumed
+Successfully built 27fbf28f6ca9
+Successfully tagged radondb/radondb-pgpool:debian-11.16-2.1.1
+go build -o bin/pgbackrest/pgbackrest ./cmd/pgbackrest
+docker build \
+	-f /root/cdev/src/github.com/radondb/postgres-containters/build/pgbackrest/Dockerfile \
+	-t radondb/radondb-pgbackrest:debian-11.16-2.1.1 \
+	--build-arg BASEOS=debian \
+	--build-arg BASEVER=2.1.1 \
+	--build-arg PG_FULL=11.16 \
+	--build-arg PG_MAJOR=11 \
+	--build-arg BASE_IMAGE_OS=bullseye-slim \
+	--build-arg PREFIX=radondb \
+	--build-arg BACKREST_VER=2.36 \
+	--build-arg PACKAGER=apt \
+	/root/cdev/src/github.com/radondb/postgres-containters
+Sending build context to Docker daemon  78.78MB
+Step 1/29 : ARG BASEOS
+Step 2/29 : ARG BASEVER
+Step 3/29 : ARG PG_FULL
+Step 4/29 : ARG PREFIX
+Step 5/29 : ARG BASE_IMAGE_OS
+Step 6/29 : FROM ${PREFIX}/radondb-base:${BASEOS}-${PG_FULL}-${BASEVER}
+ ---> fd6068144ce4
+Step 7/29 : ARG PACKAGER
+ ---> Using cache
+ ---> d2127ef51856
+Step 8/29 : ARG BACKREST_VER
+ ---> Using cache
+ ---> c3126921fbc8
+Step 9/29 : ARG BASEOS
+ ---> Using cache
+ ---> 9df98207bf0e
+Step 10/29 : LABEL name="pgbackrest" 	summary="RadonDB pgBackRest ${BACKREST_VER}" 	description="The RadonDB pgBackRest container that supports pgBackRest backups, restores, and repo functionality modes." 	io.k8s.description="pgBackRest" 	io.k8s.display-name="RadonDB pgBackRest" 	io.openshift.tags="postgresql,postgres,pgbackrest,backup,database,radondb"
+ ---> Using cache
+ ---> f3477cea3642
+Step 11/29 : RUN groupadd postgres -g 26 && useradd postgres -u 26 -g 26
+ ---> Using cache
+ ---> 1260f0c31ee4
+Step 12/29 : RUN apt-get update ;apt-get install -y --no-install-recommends 	openssh-server 	openssh-client 	bzip2 	lz4 	pgbackrest ;	sed -i 's/^/#/g' /etc/pgbackrest.conf ;	rm -rf /var/cache/apt/*
+ ---> Using cache
+ ---> b8faac3ac7b3
+Step 13/29 : RUN mkdir -p /opt/radondb/bin /opt/radondb/conf /pgdata /backrestrepo 	/var/log/pgbackrest
+ ---> Using cache
+ ---> 3f87e5ae8230
+Step 14/29 : ADD bin/pgbackrest-restore /opt/radondb/bin
+ ---> Using cache
+ ---> 08d7a5d0ece6
+Step 15/29 : ADD conf/pgbackrest-restore /opt/radondb/conf
+ ---> Using cache
+ ---> 8c492404933e
+Step 16/29 : ADD bin/pgbackrest /opt/radondb/bin
+ ---> Using cache
+ ---> 54913967ed10
+Step 17/29 : ADD bin/common /opt/radondb/bin
+ ---> Using cache
+ ---> 9e6cabd78431
+Step 18/29 : ADD bin/pgbackrest-common /opt/radondb/bin
+ ---> Using cache
+ ---> da3926f56e71
+Step 19/29 : RUN chown -R postgres:postgres /opt/radondb  	/backrestrepo /var/log/pgbackrest /pgdata
+ ---> Using cache
+ ---> a570036c2072
+Step 20/29 : ADD bin/pgbackrest-repo /usr/local/bin
+ ---> Using cache
+ ---> 81417a1a8d39
+Step 21/29 : RUN chmod +x /usr/local/bin/pgbackrest-repo.sh /usr/local/bin/archive-push-s3.sh 	/usr/local/bin/archive-push-gcs.sh 	&& mkdir -p /etc/pgbackrest 	&& chown -R postgres:postgres /etc/pgbackrest
+ ---> Using cache
+ ---> 397a90d61679
+Step 22/29 : RUN chmod -R g=u /etc/pgbackrest 	&& rm -f /run/nologin
+ ---> Using cache
+ ---> a74ea95d92b3
+Step 23/29 : RUN mkdir /.ssh && chown postgres:postgres /.ssh && chmod o+rwx /.ssh
+ ---> Using cache
+ ---> 7086824a7131
+Step 24/29 : RUN rm -rf /var/spool/pgbackrest
+ ---> Using cache
+ ---> b66daea87a10
+Step 25/29 : VOLUME ["/sshd", "/pgdata", "/backrestrepo"]
+ ---> Using cache
+ ---> 2c8f847d0801
+Step 26/29 : USER 26
+ ---> Using cache
+ ---> edb90d5635d8
+Step 27/29 : ENV NSS_WRAPPER_SUBDIR="pgbackrest"
+ ---> Using cache
+ ---> 49d42ed6c35c
+Step 28/29 : ENTRYPOINT ["/opt/radondb/bin/uid_postgres.sh"]
+ ---> Using cache
+ ---> 1bd209828d71
+Step 29/29 : CMD ["/opt/radondb/bin/start.sh"]
+ ---> Using cache
+ ---> 03503db11270
+[Warning] One or more build-args [PG_MAJOR] were not consumed
+Successfully built 03503db11270
+Successfully tagged radondb/radondb-pgbackrest:debian-11.16-2.1.1
+docker build \
+	-f /root/cdev/src/github.com/radondb/postgres-containters/build/pgbackrest-repo/Dockerfile \
+	-t radondb/radondb-pgbackrest-repo:debian-11.16-2.1.1 \
+	--build-arg BASEOS=debian \
+	--build-arg BASEVER=2.1.1 \
+	--build-arg PG_FULL=11.16 \
+	--build-arg PREFIX=radondb \
+	/root/cdev/src/github.com/radondb/postgres-containters
+Sending build context to Docker daemon  78.78MB
+Step 1/16 : ARG BASEOS
+Step 2/16 : ARG BASEVER
+Step 3/16 : ARG PG_FULL
+Step 4/16 : ARG PREFIX
+Step 5/16 : FROM ${PREFIX}/radondb-pgbackrest:${BASEOS}-${PG_FULL}-${BASEVER}
+ ---> 03503db11270
+Step 6/16 : LABEL name="pgbackrest-repo" 	summary="RadonDB pgBackRest-repo" 	description="Capable of mounting the /backrestrepo for access to pgbackrest archives, while allowing for the configuration of pgBackRest using applicable pgBackRest environment variables." 	io.k8s.description="pgBackRest-repo" 	io.k8s.display-name="RadonDB pgBackRest-repo" 	io.openshift.tags="postgresql,postgres,pgbackrest,backup,database,radondb"
+ ---> Using cache
+ ---> 0b35a99b1e61
+Step 7/16 : USER 0
+ ---> Using cache
+ ---> 7c7ecc592823
+Step 8/16 : RUN groupadd pgbackrest -g 2000 && useradd pgbackrest -u 2000 -g 2000
+ ---> Using cache
+ ---> 843973131853
+Step 9/16 : RUN chown -R pgbackrest:pgbackrest /opt/radondb 	&& chown -R pgbackrest:root /etc/pgbackrest
+ ---> Using cache
+ ---> 7a1a0e2613f8
+Step 10/16 : ADD bin/pgbackrest-repo/uid_pgbackrest.sh /opt/radondb/bin
+ ---> Using cache
+ ---> 23c6ac5c2e36
+Step 11/16 : RUN chmod -R g=u /etc/pgbackrest 	&& rm -f /run/nologin
+ ---> Using cache
+ ---> d5ec0c66b1f8
+Step 12/16 : RUN chown pgbackrest:pgbackrest /.ssh && chmod o+rwx /.ssh
+ ---> Using cache
+ ---> 0a66d57a421e
+Step 13/16 : USER 2000
+ ---> Using cache
+ ---> f169a9455031
+Step 14/16 : ENV NSS_WRAPPER_SUBDIR="pgbackrest-repo"
+ ---> Using cache
+ ---> f569113bbba1
+Step 15/16 : ENTRYPOINT ["/opt/radondb/bin/uid_pgbackrest.sh"]
+ ---> Using cache
+ ---> 9558e9faa5b0
+Step 16/16 : CMD ["pgbackrest-repo.sh"]
+ ---> Using cache
+ ---> b9a2a65e2097
+Successfully built b9a2a65e2097
+Successfully tagged radondb/radondb-pgbackrest-repo:debian-11.16-2.1.1

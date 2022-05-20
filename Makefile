@@ -154,7 +154,7 @@ ccbase-ext-image-docker: ccbase-ext-image-build
 # ----- Special case pg-based image (postgres) -----
 # Special case args: BACKREST_VER
 postgres-pgimg-build: ccbase-image $(CCPROOT)/build/postgres/Dockerfile
-	$(IMGCMDSTEM) \
+	$(IMGCMDSTEM)  \
 		-f $(CCPROOT)/build/postgres/Dockerfile \
 		-t $(CCP_IMAGE_PREFIX)/radondb-postgres:$(CCP_IMAGE_TAG) \
 		--build-arg BASEOS=$(CCP_BASEOS) \
@@ -270,8 +270,7 @@ upgrade-img-build: ccbase-image $(CCPROOT)/build/upgrade/Dockerfile
 		--build-arg PREFIX=$(CCP_IMAGE_PREFIX) \
 		--build-arg DFSET=$(DFSET) \
 		--build-arg PACKAGER=$(PACKAGER) \
-		--build-arg UPGRADE_PG_VERSIONS="$(shell find $(CCPROOT)/conf -type f -name "radondbpg*.repo" | \
-			grep -o [1-9][0-9])" \
+		--build-arg UPGRADE_PG_VERSIONS="$(shell ls|grep "^[0-9][0-9]$")" \
 		$(CCPROOT)
 
 upgrade-img-buildah: upgrade-img-build ;
